@@ -26,7 +26,7 @@ class Config:
     # Paths
     OUTPUT_DIR = "./image-captioning-output"
     LOGS_DIR = "./logs"
-    RESULT_FILE = "./result_BARTpho_train-test.json"
+    RESULT_FILE = "./result.json"
     
     # Wandb configuration
     USE_WANDB = True  # Flag to control whether to use wandb or not
