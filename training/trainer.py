@@ -1,9 +1,10 @@
 import wandb
+import os
 from functools import partial
 from transformers import Seq2SeqTrainer, Seq2SeqTrainingArguments, default_data_collator
 
 from models.metrics import compute_metrics
-from training.callbacks import WandbModelCheckpointCallback
+from training.callbacks import WandbModelCheckpointCallback, EpochTrackingCallback
 
 def setup_training(model, tokenizer, train_dataset, eval_dataset, config):
     """Setup training arguments and trainer."""
@@ -32,24 +33,39 @@ def setup_training(model, tokenizer, train_dataset, eval_dataset, config):
         logging_steps=100,
     )
     
-    # Setup compute_metrics with tokenizer
-    metric_fn = partial(compute_metrics, tokenizer=tokenizer)
+    # Setup compute_metrics with tokenizer and paths
+    groundtruth_file = config.GROUNDTRUTH_FILE if hasattr(config, 'GROUNDTRUTH_FILE') else None
+    eval_output_dir = os.path.join(config.OUTPUT_DIR, "eval")
+    
+    # Create epoch tracking callback
+    epoch_callback = EpochTrackingCallback()
     
     # Setup callbacks
-    callbacks = []
+    callbacks = [epoch_callback]  # Always include epoch callback
     if config.USE_WANDB and config.WANDB_SAVE_CHECKPOINT:
         callbacks.append(WandbModelCheckpointCallback())
+    
+    # Create custom metric function that captures the current epoch
+    def metric_fn_with_epoch(eval_preds):
+        return compute_metrics(
+            eval_preds=eval_preds, 
+            tokenizer=tokenizer,
+            groundtruth_file=groundtruth_file,
+            output_dir=eval_output_dir,
+            dataset=eval_dataset,
+            epoch=epoch_callback.current_epoch
+        )
     
     # Create trainer
     trainer = Seq2SeqTrainer(
         model=model,
         tokenizer=tokenizer,
         args=training_args,
-        compute_metrics=metric_fn,
+        compute_metrics=metric_fn_with_epoch,
         train_dataset=train_dataset,
         eval_dataset=eval_dataset,
         data_collator=default_data_collator,
-        callbacks=callbacks if callbacks else None
+        callbacks=callbacks
     )
     
     return trainer
