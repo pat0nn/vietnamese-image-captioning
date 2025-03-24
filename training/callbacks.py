@@ -31,3 +31,29 @@ class WandbModelCheckpointCallback(TrainerCallback):
             print(f"Error saving checkpoint to wandb: {str(e)}")
 
         return control
+
+class EpochTrackingCallback(TrainerCallback):
+    """
+    Callback to track epoch numbers and provide them to the evaluation function.
+    """
+    def __init__(self):
+        self.current_epoch = 0
+    
+    def on_epoch_begin(self, args, state, control, **kwargs):
+        """Called at the beginning of each epoch"""
+        # Update current epoch
+        if state.epoch is not None:
+            self.current_epoch = int(state.epoch)
+        else:
+            self.current_epoch += 1
+        
+        print(f"Starting epoch {self.current_epoch}")
+    
+    def on_evaluate(self, args, state, control, **kwargs):
+        """Called before evaluation begins"""
+        # Provide the current epoch number to the trainer
+        trainer = kwargs.get("trainer", None)
+        if trainer is not None:
+            # Store current epoch in trainer's state
+            trainer.current_epoch = self.current_epoch
+            print(f"Evaluation at epoch {self.current_epoch}")
