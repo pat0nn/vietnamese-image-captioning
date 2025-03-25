@@ -57,12 +57,12 @@ def evaluate_from_files(groundtruth_file, prediction_file):
         dict: Kết quả đánh giá các tham số
     """
     # Đọc file groundtruth caption
-    print(f"Đọc file groundtruth từ: {groundtruth_file}")
+    # print(f"Đọc file groundtruth từ: {groundtruth_file}")
     with open(groundtruth_file, 'r', encoding='utf-8') as f:
         gt_data = json.load(f)
     
     # Đọc file prediction caption
-    print(f"Đọc file prediction từ: {prediction_file}")
+    # print(f"Đọc file prediction từ: {prediction_file}")
     with open(prediction_file, 'r', encoding='utf-8') as f:
         pred_data = json.load(f)
         
@@ -90,24 +90,24 @@ def evaluate_from_files(groundtruth_file, prediction_file):
     pred_ids = set(pred_captions.keys())
     common_ids = gt_ids.intersection(pred_ids)
     
-    if len(common_ids) == 0:
-        print("CẢNH BÁO: Không tìm thấy image_id chung giữa hai file!")
-        return {}
+    # if len(common_ids) == 0:
+    #     print("CẢNH BÁO: Không tìm thấy image_id chung giữa hai file!")
+    #     return {}
     
-    print(f"Số lượng image trong groundtruth: {len(gt_ids)}")
-    print(f"Số lượng image trong prediction: {len(pred_ids)}")
-    print(f"Số lượng image chung để đánh giá: {len(common_ids)}")
+    # print(f"Số lượng image trong groundtruth: {len(gt_ids)}")
+    # print(f"Số lượng image trong prediction: {len(pred_ids)}")
+    # print(f"Số lượng image chung để đánh giá: {len(common_ids)}")
     
-    if len(common_ids) < len(gt_ids) or len(common_ids) < len(pred_ids):
-        print(f"Cảnh báo: Có {len(gt_ids) - len(common_ids)} ảnh từ groundtruth không có trong prediction")
-        print(f"Cảnh báo: Có {len(pred_ids) - len(common_ids)} ảnh từ prediction không có trong groundtruth")
+    # if len(common_ids) < len(gt_ids) or len(common_ids) < len(pred_ids):
+    #     print(f"Cảnh báo: Có {len(gt_ids) - len(common_ids)} ảnh từ groundtruth không có trong prediction")
+    #     print(f"Cảnh báo: Có {len(pred_ids) - len(common_ids)} ảnh từ prediction không có trong groundtruth")
     
     # Lọc để chỉ giữ các image_id chung
     filtered_gt = {id: gt_captions[id] for id in common_ids}
     filtered_pred = {id: pred_captions[id] for id in common_ids}
     
     # Tính toán các metrics
-    print("Tính toán các metrics...")
+    print("Computing metrics...")
     scores = metrics.compute_scores(filtered_gt, filtered_pred)[0]
     
     result = {}
