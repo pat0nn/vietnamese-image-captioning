@@ -4,7 +4,7 @@ class Config:
     TEST_DATA_PATH = '/kaggle/input/ktvic-bartpho/data/test_data.json'
     TRAIN_IMAGES_DIR = '/kaggle/input/ktvic-bartpho/data/train-images'
     TEST_IMAGES_DIR = '/kaggle/input/ktvic-bartpho/data/public-test-images'
-    DATASET_SAVE_PATH = '/run/media/trong/New Volume/Algo/KTVIC/image_caption_dataset'
+    DATASET_SAVE_PATH = './dataset/image_caption_dataset'
     
     GROUNDTRUTH_FILE = '/kaggle/working/vietnamese-image-captioning/data/grouped_captions.json'
     
@@ -14,8 +14,8 @@ class Config:
     MAX_TARGET_LENGTH = 64
     
     # Training parameters
-    BATCH_SIZE = 8
-    EVAL_BATCH_SIZE = 8
+    BATCH_SIZE = 4
+    EVAL_BATCH_SIZE = 4
     NUM_EPOCHS = 8
     WEIGHT_DECAY = 1e-6
     FP16 = True
@@ -32,6 +32,6 @@ class Config:
     
     # Wandb configuration
     USE_WANDB = True  # Flag to control whether to use wandb or not
-    WANDB_PROJECT = "ViT-BARTpho"
+    WANDB_PROJECT = "ViT-BARTpho_batch4"
     WANDB_RUN_NAME = "experiment"
     WANDB_SAVE_CHECKPOINT = True
