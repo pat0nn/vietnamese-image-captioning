@@ -11,7 +11,7 @@ class Config:
     # Model parameters
     IMAGE_ENCODER_MODEL = "google/vit-large-patch16-224-in21k"
     TEXT_DECODER_MODEL = "vinai/bartpho-word"
-    MAX_TARGET_LENGTH = 64
+    MAX_TARGET_LENGTH = 32
     
     # Training parameters
     BATCH_SIZE = 4
