@@ -66,7 +66,7 @@ def evaluate_from_files(groundtruth_file, prediction_file):
     with open(prediction_file, 'r', encoding='utf-8') as f:
         pred_data = json.load(f)
         
-    print(pred_data)
+    # print(pred_data)
     
     # Chuẩn bị dữ liệu cho việc tính toán metrics
     gt_captions = {}
@@ -129,14 +129,14 @@ def compute_metrics(eval_preds, tokenizer, ignore_pad_token_for_loss=True, groun
     """Compute evaluation metrics for the generated captions."""
     preds, labels = eval_preds
     
-    print(f"Predictions shape: {preds.shape}")
-    if isinstance(preds, tuple):
-        preds = preds[0]
+    # print(f"Predictions shape: {preds.shape}")
+    # if isinstance(preds, tuple):
+    #     preds = preds[0]
 
     # Decode predictions
     decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
     
-    print(f"Decoded predictions: {decoded_preds}")
+    # print(f"Decoded predictions: {decoded_preds}")
     
     # Save predictions to a JSON file
     if output_dir is None:
