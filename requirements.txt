@@ -6,6 +6,7 @@ rouge_score
 evaluate 
 underthesea  
 wandb
+python-dotenv
 
 # Testing
 pytest>=6.0.0
