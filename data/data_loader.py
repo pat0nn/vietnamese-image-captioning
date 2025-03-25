@@ -31,7 +31,7 @@ def process_train_val_data(data, images_dir):
     records = []
     for i, ann in enumerate(data['annotations']):
         
-        if (i == 5):
+        if (i == 25):
             break
         
         if 'image_id' in ann:
@@ -63,7 +63,7 @@ def process_test_data(data, images_dir):
 
     for i, img in enumerate(data['images']):
         
-        if (i == 5):
+        if (i == 25):
             break
         
         # Extract image_id from filename
