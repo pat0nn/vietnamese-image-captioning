@@ -60,7 +60,7 @@ def train():
     
     # Setup training
     print("Setting up trainer...")
-    trainer = setup_training(model, tokenizer, train_dataset, eval_dataset, Config)
+    trainer = setup_training(model,feature_extractor, tokenizer, train_dataset, eval_dataset, Config)
     
     # Train model
     print("Starting training...")
