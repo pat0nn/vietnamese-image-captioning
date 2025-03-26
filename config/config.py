@@ -16,7 +16,7 @@ class Config:
     # Training parameters
     BATCH_SIZE = 4
     EVAL_BATCH_SIZE = 4
-    NUM_EPOCHS = 8
+    NUM_EPOCHS = 7
     WEIGHT_DECAY = 1e-6
     FP16 = True
     
