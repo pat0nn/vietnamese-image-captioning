@@ -6,7 +6,7 @@ from transformers import Seq2SeqTrainer, Seq2SeqTrainingArguments, default_data_
 from models.metrics import compute_metrics
 from training.callbacks import WandbModelCheckpointCallback, EpochTrackingCallback
 
-def setup_training(model, tokenizer, train_dataset, eval_dataset, config):
+def setup_training(model,feature_extractor, tokenizer, train_dataset, eval_dataset, config):
     """Setup training arguments and trainer."""
     # Initialize Weights & Biases if enabled
     if config.USE_WANDB:
@@ -18,7 +18,7 @@ def setup_training(model, tokenizer, train_dataset, eval_dataset, config):
     # Create training arguments
     training_args = Seq2SeqTrainingArguments(
         predict_with_generate=True,
-        evaluation_strategy="epoch",
+        eval_strategy="epoch",
         save_strategy="epoch",
         save_total_limit=1,
         per_device_train_batch_size=config.BATCH_SIZE,
@@ -59,7 +59,7 @@ def setup_training(model, tokenizer, train_dataset, eval_dataset, config):
     # Create trainer
     trainer = Seq2SeqTrainer(
         model=model,
-        tokenizer=tokenizer,
+        tokenizer=feature_extractor,
         args=training_args,
         compute_metrics=metric_fn_with_epoch,
         train_dataset=train_dataset,
