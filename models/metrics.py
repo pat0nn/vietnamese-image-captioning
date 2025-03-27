@@ -130,8 +130,9 @@ def compute_metrics(eval_preds, tokenizer, ignore_pad_token_for_loss=True, groun
     preds, labels = eval_preds
     
     # print(f"Predictions shape: {preds.shape}")
-    # if isinstance(preds, tuple):
-    #     preds = preds[0]
+    if isinstance(preds, tuple):
+        preds = preds[0]
+
 
     # Decode predictions
     decoded_preds = tokenizer.batch_decode(preds, skip_special_tokens=True)
