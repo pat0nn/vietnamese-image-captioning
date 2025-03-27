@@ -159,5 +159,6 @@ def compute_metrics(eval_preds, tokenizer, ignore_pad_token_for_loss=True, groun
         result = evaluate_from_files(groundtruth_file, prediction_file)
     else:
         result = {}
+        print("No groundtruth file provided for evaluation")
     
     return result
