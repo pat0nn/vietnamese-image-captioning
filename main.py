@@ -50,7 +50,7 @@ def train():
     )
     
     # Create datasets
-    print("Creating training and evaluation datasets...")
+    print("Creating training and evaluation datasets...")           
     train_dataset = ImageCaptioningDataset(
         dataset, 'train', Config.MAX_TARGET_LENGTH, tokenizer, feature_extractor
     )
@@ -58,12 +58,17 @@ def train():
         dataset, 'test', Config.MAX_TARGET_LENGTH, tokenizer, feature_extractor
     )
     
+    # Limit training dataset to 2000 samples
+    print(f"Limiting training dataset to 2000 samples from original size of {len(train_dataset)}")
+    train_dataset = torch.utils.data.Subset(train_dataset, range(min(3000, len(train_dataset))))
+    print(f"New training dataset size: {len(train_dataset)}")
+    
     # Setup training
     print("Setting up trainer...")
-    trainer = setup_training(model,feature_extractor, tokenizer, train_dataset, eval_dataset, Config)
-    
+    trainer = setup_training(model, feature_extractor, tokenizer, train_dataset, eval_dataset, Config)
+
     # Train model
-    print("Starting training...")
+    print("Starting training...")   
     trained_model = train_model(trainer)
     
     print("Training completed successfully!")
@@ -72,7 +77,7 @@ def train():
 def inference(model_path=None):
     """Run inference on test dataset."""
     print("Starting inference pipeline...")
-    
+     
     # Set up wandb authentication if enabled
     use_wandb = setup_wandb_auth(Config.USE_WANDB)
     
