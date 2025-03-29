@@ -31,7 +31,7 @@ class Config:
     RESULT_FILE = "./result.json"
     
     # Wandb configuration
-    USE_WANDB = True  # Flag to control whether to use wandb or not
+    USE_WANDB = False  # Flag to control whether to use wandb or not
     WANDB_PROJECT = "ViT-BARTpho_batch8"
     WANDB_RUN_NAME = "experiment"
-    WANDB_SAVE_CHECKPOINT = True
+    WANDB_SAVE_CHECKPOINT = False
