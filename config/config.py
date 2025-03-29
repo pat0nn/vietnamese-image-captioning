@@ -14,8 +14,8 @@ class Config:
     MAX_TARGET_LENGTH = 32
     
     # Training parameters
-    BATCH_SIZE = 8
-    EVAL_BATCH_SIZE = 8
+    BATCH_SIZE = 4
+    EVAL_BATCH_SIZE = 4
     NUM_EPOCHS = 3
     WEIGHT_DECAY = 1e-6
     FP16 = True
