@@ -14,16 +14,16 @@ class Config:
     MAX_TARGET_LENGTH = 32
     
     # Training parameters
-    BATCH_SIZE = 4
-    EVAL_BATCH_SIZE = 4
-    NUM_EPOCHS = 7
+    BATCH_SIZE = 8
+    EVAL_BATCH_SIZE = 8
+    NUM_EPOCHS = 3
     WEIGHT_DECAY = 1e-6
     FP16 = True
     
     # Inference parameters
     NUM_BEAMS = 3
     DO_SAMPLE = False
-    MAX_LENGTH = 24
+    MAX_LENGTH = 32
     
     # Paths
     OUTPUT_DIR = "./output"
@@ -32,6 +32,6 @@ class Config:
     
     # Wandb configuration
     USE_WANDB = True  # Flag to control whether to use wandb or not
-    WANDB_PROJECT = "ViT-BARTpho_batch4"
+    WANDB_PROJECT = "ViT-BARTpho_batch8"
     WANDB_RUN_NAME = "experiment"
     WANDB_SAVE_CHECKPOINT = True
