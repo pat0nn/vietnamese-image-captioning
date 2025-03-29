@@ -11,19 +11,19 @@ class Config:
     # Model parameters
     IMAGE_ENCODER_MODEL = "google/vit-large-patch16-224-in21k"
     TEXT_DECODER_MODEL = "vinai/bartpho-word"
-    MAX_TARGET_LENGTH = 32
+    MAX_TARGET_LENGTH = 64
     
     # Training parameters
     BATCH_SIZE = 8
     EVAL_BATCH_SIZE = 8
-    NUM_EPOCHS = 3
+    NUM_EPOCHS = 5
     WEIGHT_DECAY = 1e-6
     FP16 = True
     
     # Inference parameters
     NUM_BEAMS = 3
     DO_SAMPLE = False
-    MAX_LENGTH = 32
+    MAX_LENGTH = 24
     
     # Paths
     OUTPUT_DIR = "./output"
@@ -31,7 +31,7 @@ class Config:
     RESULT_FILE = "./result.json"
     
     # Wandb configuration
-    USE_WANDB = False  # Flag to control whether to use wandb or not
+    USE_WANDB = True  # Flag to control whether to use wandb or not
     WANDB_PROJECT = "ViT-BARTpho_batch8"
     WANDB_RUN_NAME = "experiment"
-    WANDB_SAVE_CHECKPOINT = False
+    WANDB_SAVE_CHECKPOINT = True
