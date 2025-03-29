@@ -25,7 +25,6 @@ def load_model_and_processors(image_encoder_model, text_decoder_model):
         
     
     model.generation_config = GenerationConfig(
-        max_length=32,
         early_stopping=True,
         no_repeat_ngram_size=3,
         length_penalty=2.0,
