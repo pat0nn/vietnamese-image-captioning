@@ -1,5 +1,0 @@
-scripts
-**/__pycache__
-models/ops/*
-output/*
-dataset/*
