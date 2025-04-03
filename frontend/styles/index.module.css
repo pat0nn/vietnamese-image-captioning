@@ -1,0 +1,197 @@
+.container {
+  background-color: var(--white);
+  text-align: center;
+  padding: 2em 0;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.container h1 {
+  color: var(--darkGrey);
+  font-size: 1.5rem;
+  margin-bottom: .5em;
+}
+
+.fileClarifications {
+  margin: .1em 0 2em;
+}.fileClarifications h2 {
+  color: #828282;
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: .25em;
+} .fileClarifications span {
+  font-size: .75rem;
+  background-color: var(--lightBlue);
+  padding: .5em;
+  border-radius: 5px;
+  color: var(--deepBlue);
+}
+
+.imageDrop {
+  cursor: pointer;
+  width: 80%;
+  margin: 0 auto;
+  padding: 3em 0;
+  display: flex;
+  flex-direction: column;
+  background-color: var(--lightBlue);
+  border: 2px dashed var(--borderBlue);
+  border-radius: 8px;
+  align-items: center;
+  row-gap: 2em;
+  margin-bottom: 1em;
+}.imageDrop p{
+  color: var(--lightGrey);
+}
+.activeImageDrop{
+  border-color: var(--darkGrey);
+  background-color: #50545b;
+} .activeImageDrop p{
+  color: var(--lightBlue);
+
+}
+
+.imageDrop ~ p {
+  color: var(--midGrey);
+  margin-bottom: 1.5em;
+}
+
+.fileButton{
+  cursor: pointer;
+  width: 70%;
+  max-width: 150px;
+  background-color: var(--deepBlue);
+  padding: .5em 0;
+  border-radius: 8px;
+  color: var(--white);
+  outline: none;
+  border: none;
+}
+
+.fileButton:hover, .fileButton:focus{
+  opacity: 65%;
+  transform: scale(.98);
+}
+
+.fileInput{
+  display: none;
+}
+
+.loadingMessage {
+  margin: 1.5em auto;
+  color: var(--deepBlue);
+  font-weight: 500;
+  font-size: 1rem;
+  padding: 0.5em;
+  background-color: var(--lightBlue);
+  border-radius: 5px;
+  width: 80%;
+  max-width: 400px;
+}
+
+.captionContainer {
+  margin: 1.5em auto;
+  padding: 1em;
+  width: 90%;
+  max-width: 500px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.captionContainer h3 {
+  color: var(--darkGrey);
+  margin-bottom: 0.5em;
+  font-size: 1.1rem;
+}
+
+.captionText {
+  color: #333;
+  font-size: 1rem;
+  line-height: 1.5;
+  font-weight: 400;
+  padding: 0.5em;
+  background-color: white;
+  border-radius: 5px;
+  border-left: 3px solid var(--deepBlue);
+}
+
+.errorMessage {
+  color: #d32f2f;
+  margin: 1em auto;
+  font-size: 0.9rem;
+}
+
+.modeToggleButton {
+  cursor: pointer;
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.6em 1.2em;
+  font-size: 0.9rem;
+  margin-bottom: 1.5em;
+  transition: background-color 0.2s;
+}
+
+.modeToggleButton:hover {
+  background-color: #5a6268;
+}
+
+.contributionContainer {
+  margin: 1.5em auto;
+  padding: 1em;
+  width: 90%;
+  max-width: 500px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.contributionContainer h3 {
+  color: var(--darkGrey);
+  margin-bottom: 0.5em;
+  font-size: 1.1rem;
+  text-align: left;
+}
+
+.captionInput {
+  width: 100%;
+  padding: 0.8em;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  margin-bottom: 1em;
+  resize: vertical;
+  min-height: 100px;
+  font-family: inherit;
+}
+
+.saveButton {
+  cursor: pointer;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 0.7em 1.5em;
+  font-size: 0.9rem;
+  transition: background-color 0.2s;
+}
+
+.saveButton:hover {
+  background-color: #218838;
+}
+
+.saveButton:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.successMessage {
+  margin-top: 1em;
+  padding: 0.7em;
+  background-color: #d4edda;
+  color: #155724;
+  border-radius: 4px;
+  font-size: 0.9rem;
+}
