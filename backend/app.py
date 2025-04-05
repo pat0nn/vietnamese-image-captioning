@@ -14,8 +14,23 @@ from datetime import datetime, timedelta
 import jwt
 
 app = Flask(__name__, static_folder=None)  # Tắt thư mục static mặc định
-CORS_ORIGIN = os.environ.get('CORS_ORIGIN', 'https://phambatrong.com/')
-CORS(app, resources={r"/*": {"origins": [CORS_ORIGIN, "http://localhost:3000"], "supports_credentials": True}})
+CORS_ORIGINS = [
+    'http://localhost:3000',
+    'https://phambatrong.com',
+    'https://www.phambatrong.com'
+]
+CORS(app, resources={r"/*": {"origins": CORS_ORIGINS, "supports_credentials": True}})
+
+# Custom middleware để thêm CORS header cho mọi response
+@app.after_request
+def add_cors_headers(response):
+    origin = request.headers.get('Origin')
+    if origin in CORS_ORIGINS:
+        response.headers.add('Access-Control-Allow-Origin', origin)
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+    return response
 
 # SECRET_KEY mới, đảm bảo dài và đủ mạnh (nên đặt trong biến môi trường trong production)
 app.config['SECRET_KEY'] = 'hNOg9JHiXCjUcqQzNtvYFKa7eksRLdwSGIfupW5M23T4vPDyZm'
@@ -437,8 +452,16 @@ def get_user():
     })
 
 # API route for image captioning (no login required)
-@app.route('/api/caption', methods=['POST'])
+@app.route('/api/caption', methods=['POST', 'OPTIONS'])
 def caption_image():
+    # Xử lý trường hợp preflight request
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'ok'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+        response.headers.add('Access-Control-Allow-Methods', 'POST,OPTIONS')
+        return response
+        
     if 'image' not in request.files:
         return jsonify({'error': 'No image uploaded'}), 400
     
@@ -469,19 +492,26 @@ def caption_image():
         # Format the caption
         formatted_caption = format_caption(raw_caption)
         
-        return jsonify({
+        # Thêm CORS header cho response
+        response = jsonify({
             'success': True,
             'caption': formatted_caption,
             'raw_caption': raw_caption  # Optional: include raw caption for debugging
         })
+        return response
     
     except Exception as e:
         print(f"Error generating caption: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
 # API route to save user contributed data (login required)
-@app.route('/api/contribute', methods=['POST'])
+@app.route('/api/contribute', methods=['POST', 'OPTIONS'])
 def contribute_data():
+    # Xử lý trường hợp preflight request
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'ok'})
+        return response
+        
     # Check if user is logged in
     user_data = get_current_user(request)
     if not user_data:
@@ -560,8 +590,12 @@ def contribute_data():
         return jsonify({'error': str(e)}), 500
 
 # API to get all contributed images (for admin)
-@app.route('/api/contributions', methods=['GET'])
+@app.route('/api/contributions', methods=['GET', 'OPTIONS'])
 def get_contributions():
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'ok'})
+        return response
+        
     try:
         conn = get_db_connection()
         cursor = conn.cursor(cursor_factory=RealDictCursor)
@@ -587,8 +621,12 @@ def get_contributions():
         return jsonify({'error': str(e)}), 500
 
 # API to get user's contributions
-@app.route('/api/user/contributions', methods=['GET'])
+@app.route('/api/user/contributions', methods=['GET', 'OPTIONS'])
 def get_user_contributions():
+    if request.method == 'OPTIONS':
+        response = jsonify({'status': 'ok'})
+        return response
+        
     # Check if user is logged in
     user_data = get_current_user(request)
     if not user_data:
