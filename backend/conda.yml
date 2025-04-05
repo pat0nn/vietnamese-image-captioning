@@ -1,0 +1,20 @@
+name: image-caption-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.9
+  - pip=23.0.1
+  - pip:
+    - flask==2.2.3
+    - flask-cors==3.0.10
+    - Pillow==9.5.0
+    - torch==2.0.1
+    - transformers==4.30.2
+    - psycopg2-binary==2.9.5
+    - bcrypt==4.0.1
+    - PyJWT==2.6.0
+    - azureml-defaults>=1.0.0
+    - inference-schema[numpy-support]>=1.0.0
+    - onnxruntime-gpu>=1.7.0
+    - psycopg2-binary>=2.9.5 

@@ -1,0 +1,47 @@
+apiVersion: 2019-12-01
+location: eastus
+name: image-uploader-api
+properties:
+  containers:
+  - name: image-uploader-api
+    properties:
+      image: ${REGISTRY}/image-uploader:latest
+      environmentVariables:
+      - name: DB_HOST
+        value: ${DB_HOST}
+      - name: DB_PORT
+        value: ${DB_PORT}
+      - name: DB_NAME
+        value: ${DB_NAME}
+      - name: DB_USER
+        value: ${DB_USER}
+      - name: DB_PASSWORD
+        secureValue: ${DB_PASSWORD}
+      - name: MODEL_PATH
+        value: /mnt/azurefile/model
+      - name: UPLOAD_FOLDER
+        value: /mnt/azurefile/uploads
+      resources:
+        requests:
+          cpu: 2
+          memoryInGb: 4
+      ports:
+      - port: 5000
+      volumeMounts:
+      - name: azurefile
+        mountPath: /mnt/azurefile
+  volumes:
+  - name: azurefile
+    azureFile:
+      shareName: ${FILE_SHARE_NAME}
+      storageAccountName: ${STORAGE_ACCOUNT_NAME}
+      storageAccountKey: ${STORAGE_ACCOUNT_KEY}
+  ipAddress:
+    type: Public
+    ports:
+    - port: 5000
+      protocol: TCP
+    dnsNameLabel: image-uploader-api
+  osType: Linux
+tags: {}
+type: Microsoft.ContainerInstance/containerGroups 
