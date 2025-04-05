@@ -3,6 +3,11 @@ import style from '../styles/index.module.css';
 import mainImage from "../public/images/image.svg";
 import Head from 'next/head';
 import { useRef, useState } from 'react';
+import { useAuth } from '../components/Auth/AuthContext';
+import AuthNav from '../components/Auth/AuthNav';
+import AuthModal from '../components/Auth/AuthModal';
+import { getImageCaption, contributeImage } from '../utils/requestHelper';
+import { toast } from 'react-toastify';
 
 export default function Home() {
   let fileInputRef = useRef(null);
@@ -20,6 +25,9 @@ export default function Home() {
   let [isContributing, setIsContributing] = useState(false);
   let [contributionSuccess, setContributionSuccess] = useState(false);
   let [selectedFile, setSelectedFile] = useState(null);
+  let [showAuthModal, setShowAuthModal] = useState(false);
+
+  const { isAuthenticated } = useAuth();
 
   let handleDragOver = (e) => {
     e.preventDefault();
@@ -35,7 +43,7 @@ export default function Home() {
       handleAddFile(files);
       return;
     }
-    setClientError("Only one file can be uploaded. Upload a single image.");
+    setClientError("Chỉ có thể tải lên một tệp. Vui lòng tải lên một hình ảnh duy nhất.");
   };
 
   let handleDragEnter = (e) => {
@@ -56,19 +64,19 @@ export default function Home() {
     let imageFile = sentFileList[0];
 
     if (!imageFile) {
-      setClientError("Please upload an image.");
+      setClientError("Vui lòng tải lên một hình ảnh.");
       return;
     }
 
     if (!imageFile.type.startsWith("image/")) {
-      setClientError("Only image files can be uploaded. Upload a valid file.");
+      setClientError("Chỉ có thể tải lên tệp hình ảnh. Vui lòng tải lên tệp hợp lệ.");
       return;
     }
 
-    if (imageFile.size > 1024 * 1024) {
-      setClientError("Only image files 1MB or smaller can be uploaded.");
-      return;
-    }
+    // if (imageFile.size > 1024 * 1024) {
+    //   setClientError("Chỉ có thể tải lên tệp hình ảnh nhỏ hơn hoặc bằng 1MB.");
+    //   return;
+    // }
 
     setSelectedFile(imageFile);
     let imgURL = URL.createObjectURL(imageFile);
@@ -88,40 +96,85 @@ export default function Home() {
       const formData = new FormData();
       formData.append('image', imageFile);
       
-      const response = await fetch('http://localhost:5000/api/caption', {
-        method: 'POST',
-        body: formData,
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to get image caption');
-      }
-      
+      const data = await getImageCaption(formData);
       setImageCaption(data.caption);
     } catch (error) {
       console.error('Error getting caption:', error);
-      setClientError(error.message || 'Failed to get image caption');
+      setClientError(error.message || 'Không thể nhận mô tả hình ảnh');
     } finally {
       setIsLoading(false);
     }
   };
 
   let toggleContributionMode = () => {
-    setIsContributing(!isContributing);
-    setUserCaption("");
-    setContributionSuccess(false);
+    if (isContributing) {
+      // Switching from contribution mode to AI caption mode
+      setIsContributing(false);
+      setUserCaption("");
+      setContributionSuccess(false);
+    } else {
+      // Switching to contribution mode
+      if (!isAuthenticated) {
+        // Show login modal if not authenticated
+        setShowAuthModal(true);
+        return;
+      }
+      setIsContributing(true);
+    }
+  };
+
+  // Kiểm tra tính hợp lệ của caption
+  const validateCaption = (caption) => {
+    // Kiểm tra caption trống
+    if (!caption || !caption.trim()) {
+      return {
+        isValid: false,
+        error: 'Vui lòng nhập mô tả cho hình ảnh.'
+      };
+    }
+
+    // Tách caption thành các từ (bỏ qua khoảng trắng liên tiếp)
+    const words = caption.trim().split(/\s+/);
+    
+    // Kiểm tra số lượng từ tối thiểu
+    if (words.length < 5) {
+      return {
+        isValid: false,
+        error: 'Mô tả phải có ít nhất 5 từ.'
+      };
+    }
+    
+    // Kiểm tra độ dài từng từ
+    const longWords = words.filter(word => word.length > 7);
+    if (longWords.length > 0) {
+      return {
+        isValid: false,
+        error: `Không được sử dụng từ dài quá 7 ký tự: ${longWords.join(', ')}`
+      };
+    }
+    
+    return {
+      isValid: true,
+      error: null
+    };
   };
 
   let handleSaveContribution = async () => {
     if (!selectedFile) {
-      setClientError("Please upload an image first.");
+      setClientError("Vui lòng tải lên hình ảnh trước.");
       return;
     }
 
-    if (!userCaption.trim()) {
-      setClientError("Please enter a caption for the image.");
+    // Kiểm tra tính hợp lệ của caption
+    const validationResult = validateCaption(userCaption);
+    if (!validationResult.isValid) {
+      setClientError(validationResult.error);
+      return;
+    }
+
+    // Check if user is authenticated
+    if (!isAuthenticated) {
+      setShowAuthModal(true);
       return;
     }
 
@@ -132,23 +185,17 @@ export default function Home() {
       const formData = new FormData();
       formData.append('image', selectedFile);
       formData.append('userCaption', userCaption);
+      formData.append('skipAiCaption', 'true');
 
-      const response = await fetch('http://localhost:5000/api/contribute', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to save contribution');
-      }
+      await contributeImage(formData);
 
       setContributionSuccess(true);
       setUserCaption("");
+      toast.success("Đóng góp của bạn đã được lưu thành công!");
     } catch (error) {
       console.error('Error saving contribution:', error);
-      setClientError(error.message || 'Failed to save contribution');
+      setClientError(error.response?.data?.error || 'Không thể lưu đóng góp');
+      toast.error("Có lỗi xảy ra khi lưu đóng góp của bạn.");
     } finally {
       setIsSaving(false);
     }
@@ -161,20 +208,24 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Image Captioning App</title>
+        <title>Ứng Dụng Mô Tả Hình Ảnh</title>
       </Head>
+      <div className={style.navBar}>
+        <h1 className={style.logo}>Image Caption</h1>
+        <AuthNav />
+      </div>
       <main className={style.container}>
-        <h1>Upload your image</h1>
+        <h1>Tải lên hình ảnh của bạn</h1>
         <div className={style.fileClarifications}>
-          <h2>File should be a valid image</h2>
-          <span>JPEG, JPG, PNG, SVG or GIF</span>
+          <h2>Tệp phải là hình ảnh hợp lệ</h2>
+          <span>JPEG, JPG, PNG</span>
         </div>
 
         <button 
           className={style.modeToggleButton} 
           onClick={toggleContributionMode}
         >
-          {isContributing ? "Switch to AI Caption Mode" : "Switch to Contribution Mode"}
+          {isContributing ? "Chuyển sang Chế độ Mô tả AI" : "Chuyển sang Chế độ Đóng góp"}
         </button>
 
         <section
@@ -189,7 +240,7 @@ export default function Home() {
           {previewImage ? (
             <Image
               src={previewImage}
-              alt="Preview Image"
+              alt="Xem trước hình ảnh"
               layout="intrinsic"
               width={500}
               height={500} 
@@ -198,12 +249,12 @@ export default function Home() {
             <>
               <Image
                 src={mainImage}
-                alt="Drag and drop your image here to upload it"
+                alt="Chọn hình ảnh hoặc kéo-thả vào đây để tải lên"
                 priority
                 ref={zoneImage}
               />
               <p ref={zoneText}>
-                {dragging ? "Drop to upload your image" : "Drag & drop your image here"}
+                {dragging ? "Thả để tải lên hình ảnh của bạn" : "Chọn hình ảnh hoặc kéo-thả vào đây để tải lên"}
               </p>
             </>
           )}
@@ -223,25 +274,25 @@ export default function Home() {
         
         {isLoading && (
           <div className={style.loadingMessage}>
-            Generating caption...
+            Đang tạo mô tả...
           </div>
         )}
         
         {!isContributing && imageCaption && (
           <div className={style.captionContainer}>
-            <h3>Generated Caption:</h3>
+            <h3>Mô tả đã tạo:</h3>
             <p className={style.captionText}>{imageCaption}</p>
           </div>
         )}
 
         {isContributing && previewImage && (
           <div className={style.contributionContainer}>
-            <h3>Enter Your Caption:</h3>
+            <h3>Nhập mô tả của bạn:</h3>
             <textarea 
               className={style.captionInput} 
               value={userCaption}
               onChange={(e) => setUserCaption(e.target.value)}
-              placeholder="Enter a detailed caption for this image..."
+              placeholder="Nhập mô tả chi tiết cho hình ảnh này..."
               rows={4}
             />
             <button 
@@ -249,15 +300,19 @@ export default function Home() {
               onClick={handleSaveContribution}
               disabled={isSaving}
             >
-              {isSaving ? "Saving..." : "Save Contribution"}
+              {isSaving ? "Đang lưu..." : "Lưu đóng góp"}
             </button>
 
             {contributionSuccess && (
               <div className={style.successMessage}>
-                Thank you for your contribution!
+                Cảm ơn bạn đã đóng góp!
               </div>
             )}
           </div>
+        )}
+
+        {showAuthModal && (
+          <AuthModal onClose={() => setShowAuthModal(false)} />
         )}
       </main>
     </>

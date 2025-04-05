@@ -1,0 +1,290 @@
+.contributionsContainer {
+  padding: 20px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.contributionsContainer h2 {
+  margin-bottom: 20px;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.contributionItem {
+  display: flex;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  margin-bottom: 20px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.contributionImage {
+  flex: 0 0 200px;
+  background: #f5f5f5;
+  position: relative;
+  height: 200px;
+}
+
+.contributionImage img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.contributionDetails {
+  flex: 1;
+  padding: 15px;
+}
+
+.captionBox {
+  margin-bottom: 15px;
+}
+
+.captionBox h3 {
+  margin: 0 0 5px 0;
+  font-size: 1rem;
+  color: #555;
+}
+
+.captionBox p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.metadata {
+  display: flex;
+  font-size: 0.8rem;
+  color: #777;
+  margin-bottom: 15px;
+}
+
+.metadata p {
+  margin: 0 15px 0 0;
+}
+
+.itemActions {
+  display: flex;
+  gap: 10px;
+}
+
+.editButton, .deleteButton, .saveButton, .cancelButton {
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.editButton {
+  background-color: #4285F4;
+  color: white;
+  border: none;
+}
+
+.editButton:hover {
+  background-color: #3367D6;
+}
+
+.deleteButton {
+  background-color: #f44336;
+  color: white;
+  border: none;
+}
+
+.deleteButton:hover {
+  background-color: #d32f2f;
+}
+
+.editForm {
+  width: 100%;
+}
+
+.editInput {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.95rem;
+  margin-bottom: 10px;
+  font-family: inherit;
+}
+
+.editActions {
+  display: flex;
+  gap: 10px;
+}
+
+.saveButton {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+}
+
+.saveButton:hover {
+  background-color: #388E3C;
+}
+
+.saveButton:disabled {
+  background-color: #B3B3B3;
+  cursor: not-allowed;
+}
+
+.cancelButton {
+  background-color: #f5f5f5;
+  color: #333;
+  border: 1px solid #ddd;
+}
+
+.cancelButton:hover {
+  background-color: #e5e5e5;
+}
+
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: #555;
+  font-size: 1rem;
+}
+
+.error {
+  color: #e53935;
+  padding: 20px;
+  border: 1px solid #ffcdd2;
+  background-color: #ffebee;
+  border-radius: 4px;
+  margin: 20px auto;
+  max-width: 600px;
+  text-align: center;
+}
+
+.empty {
+  text-align: center;
+  padding: 40px;
+  color: #555;
+  font-size: 1rem;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  margin: 20px auto;
+  max-width: 600px;
+}
+
+/* Modal ảnh độ phân giải đầy đủ */
+.imageModal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modalContent {
+  background-color: white;
+  border-radius: 8px;
+  max-width: 90%;
+  max-height: 90%;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+.closeButton {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 20px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  transition: background-color 0.2s;
+}
+
+.closeButton:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.fullSizeImageContainer {
+  overflow: auto;
+  max-height: 80vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.fullSizeImage {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  object-fit: contain;
+}
+
+.modalCaption {
+  padding: 15px;
+  background-color: white;
+  border-top: 1px solid #eee;
+}
+
+.modalCaption h3 {
+  margin: 0 0 5px 0;
+  font-size: 1rem;
+  color: #555;
+}
+
+.modalCaption p {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #333;
+}
+
+/* Styles cho thiết bị di động */
+@media (max-width: 700px) {
+  .contributionItem {
+    flex-direction: column;
+  }
+  
+  .contributionImage {
+    flex: none;
+    width: 100%;
+  }
+
+  .modalContent {
+    width: 95%;
+    max-height: 85vh;
+  }
+}
+
+.validationError {
+  color: #e53935;
+  font-size: 0.85rem;
+  margin-bottom: 10px;
+  padding: 8px;
+  border-radius: 4px;
+  background-color: #ffebee;
+  border: 1px solid #ffcdd2;
+} 

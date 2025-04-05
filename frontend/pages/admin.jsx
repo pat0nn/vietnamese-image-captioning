@@ -18,7 +18,7 @@ export default function Admin() {
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to fetch contributions');
+        throw new Error(data.error || 'Không thể lấy danh sách đóng góp');
       }
       
       setContributions(data.contributions || []);
@@ -33,39 +33,39 @@ export default function Admin() {
   return (
     <>
       <Head>
-        <title>Contribution Admin - Image Captioning</title>
+        <title>Quản lý Đóng góp - Mô tả Hình ảnh</title>
       </Head>
       <div className={styles.container}>
-        <h1 className={styles.title}>Contributions Admin</h1>
-        <p className={styles.subtitle}>View all user-contributed images and captions</p>
+        <h1 className={styles.title}>Quản lý Đóng góp</h1>
+        <p className={styles.subtitle}>Xem tất cả hình ảnh và mô tả do người dùng đóng góp</p>
         
         {error && <div className={styles.error}>{error}</div>}
         
         {loading ? (
-          <div className={styles.loading}>Loading contributions...</div>
+          <div className={styles.loading}>Đang tải đóng góp...</div>
         ) : contributions.length === 0 ? (
-          <div className={styles.empty}>No contributions found</div>
+          <div className={styles.empty}>Không tìm thấy đóng góp nào</div>
         ) : (
           <div className={styles.grid}>
             {contributions.map((item) => (
               <div key={item.id} className={styles.card}>
                 <img 
                   src={`http://localhost:5000/${item.image_path}`} 
-                  alt={`Contribution ${item.id}`}
+                  alt={`Đóng góp ${item.id}`}
                   className={styles.image}
                 />
                 <div className={styles.cardContent}>
                   <div className={styles.captionBox}>
-                    <h3>User Caption:</h3>
-                    <p>{item.user_caption || "No user caption provided"}</p>
+                    <h3>Mô tả của người dùng:</h3>
+                    <p>{item.user_caption || "Không có mô tả người dùng"}</p>
                   </div>
                   <div className={styles.captionBox}>
-                    <h3>AI Caption:</h3>
-                    <p>{item.ai_caption || "No AI caption available"}</p>
+                    <h3>Mô tả AI:</h3>
+                    <p>{item.ai_caption || "Không có mô tả AI"}</p>
                   </div>
                   <div className={styles.metadata}>
                     <p>ID: {item.image_id}</p>
-                    <p>Added: {new Date(item.created_at).toLocaleString()}</p>
+                    <p>Thêm: {new Date(item.created_at).toLocaleString()}</p>
                   </div>
                 </div>
               </div>
@@ -77,7 +77,7 @@ export default function Admin() {
           className={styles.backButton}
           onClick={() => window.location.href = '/'}
         >
-          Back to Upload
+          Quay lại Trang Tải lên
         </button>
       </div>
     </>

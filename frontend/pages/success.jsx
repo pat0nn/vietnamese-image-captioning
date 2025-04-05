@@ -19,21 +19,21 @@ const Success = () => {
         setCopied(false)
       }, 4000);
     })
-    console.log("The link has been copied")
+    console.log("Đã sao chép liên kết")
   }
   
   return (
     <>
       <Head>
-        <title>Image Upload was successful!</title>
+        <title>Tải lên hình ảnh thành công!</title>
       </Head>
       <main className={styles.container}>
         <MdCheckCircle />
-        <h1>Uploaded Successfully!</h1>
+        <h1>Tải lên thành công!</h1>
         <div className={styles.imgContainer}>
           <Image
             src={clientImg} priority
-            alt="The image uploaded from your device"
+            alt="Hình ảnh đã tải lên từ thiết bị của bạn"
             width={375}
             height={500}
           />

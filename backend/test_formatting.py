@@ -30,4 +30,4 @@ for i, test in enumerate(test_cases):
     print(f"Formatted: {formatted}")
     print("-" * 50)
 
-print("Formatting complete!") 
+print("Formatting complete!")

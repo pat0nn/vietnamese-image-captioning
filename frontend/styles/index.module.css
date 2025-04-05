@@ -195,3 +195,31 @@
   border-radius: 4px;
   font-size: 0.9rem;
 }
+
+/* Navigation bar styles */
+.navBar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1em 2em;
+  background-color: white;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.logo {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--deepBlue);
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  .navBar {
+    padding: 0.8em 1em;
+  }
+  
+  .logo {
+    font-size: 1.1rem;
+  }
+}
