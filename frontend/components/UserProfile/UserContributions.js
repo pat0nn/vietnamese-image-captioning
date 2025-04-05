@@ -14,7 +14,10 @@ const UserContributions = () => {
   const [validationError, setValidationError] = useState(null);
 
   // API URL từ biến môi trường hoặc mặc định
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+  const API_URL = process.env.NEXT_PUBLIC_API_URL 
+  ? `${process.env.NEXT_PUBLIC_API_URL}/api` 
+  : 'http://localhost:5000/api';
+
 
   useEffect(() => {
     fetchUserContributions();
