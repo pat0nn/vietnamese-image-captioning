@@ -14,7 +14,8 @@ from datetime import datetime, timedelta
 import jwt
 
 app = Flask(__name__, static_folder=None)  # Tắt thư mục static mặc định
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000", "supports_credentials": True}})
+CORS_ORIGIN = os.environ.get('CORS_ORIGIN', 'https://phambatrong.com')
+CORS(app, resources={r"/*": {"origins": [CORS_ORIGIN, "http://localhost:3000"], "supports_credentials": True}})
 
 # SECRET_KEY mới, đảm bảo dài và đủ mạnh (nên đặt trong biến môi trường trong production)
 app.config['SECRET_KEY'] = 'hNOg9JHiXCjUcqQzNtvYFKa7eksRLdwSGIfupW5M23T4vPDyZm'

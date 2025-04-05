@@ -13,6 +13,9 @@ const UserContributions = () => {
   const [fullSizeImage, setFullSizeImage] = useState(null);
   const [validationError, setValidationError] = useState(null);
 
+  // API URL từ biến môi trường hoặc mặc định
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
   useEffect(() => {
     fetchUserContributions();
   }, []);
@@ -123,10 +126,20 @@ const UserContributions = () => {
     }
   };
 
+  // Tạo URL đầy đủ cho hình ảnh
+  const getImageUrl = (imagePath) => {
+    // Nếu đường dẫn đã là URL đầy đủ, trả về nó
+    if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+      return imagePath;
+    }
+    // Ngược lại, ghép với API_URL
+    return `${API_URL}/uploads/${imagePath}`;
+  };
+
   // Mở ảnh độ phân giải đầy đủ
   const openFullSizeImage = (item) => {
     setFullSizeImage({
-      src: `http://localhost:5000/uploads/${item.image_path}`,
+      src: getImageUrl(item.image_path),
       alt: item.user_caption || 'Hình ảnh đóng góp',
       caption: item.user_caption || 'Không có mô tả'
     });
@@ -164,12 +177,14 @@ const UserContributions = () => {
             className={styles.contributionImage}
             onClick={() => openFullSizeImage(item)}
           >
-            <Image 
-              src={`http://localhost:5000/uploads/${item.image_path}`}
+            {/* Sử dụng thẻ img thông thường thay vì Next.js Image */}
+            <img 
+              src={getImageUrl(item.image_path)}
               alt={item.user_caption || 'Hình ảnh đóng góp'}
               width={200}
               height={200}
               style={{ objectFit: 'cover', cursor: 'pointer' }}
+              className={styles.imagePreview}
             />
           </div>
           

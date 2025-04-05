@@ -238,19 +238,21 @@ export default function Home() {
           onDragLeave={handleDragLeave}
         >
           {previewImage ? (
-            <Image
+            <img
               src={previewImage}
               alt="Xem trước hình ảnh"
-              layout="intrinsic"
               width={500}
-              height={500} 
+              height={500}
+              style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
             />
           ) : (
             <>
-              <Image
-                src={mainImage}
+              <img
+                src={mainImage.src}
                 alt="Chọn hình ảnh hoặc kéo-thả vào đây để tải lên"
-                priority
+                width={mainImage.width}
+                height={mainImage.height}
+                style={{ maxWidth: '100%', maxHeight: '100%' }}
                 ref={zoneImage}
               />
               <p ref={zoneText}>

@@ -1,7 +1,6 @@
 import { MdCheckCircle, MdContentCopy, MdCheck } from "react-icons/md";
 import styles from "../styles/success.module.css";
 import testImage from "../public/images/FSiE4wdXEAAGkRb.jpeg";
-import Image from "next/image";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useState } from "react";
@@ -31,11 +30,12 @@ const Success = () => {
         <MdCheckCircle />
         <h1>Tải lên thành công!</h1>
         <div className={styles.imgContainer}>
-          <Image
-            src={clientImg} priority
+          <img
+            src={clientImg}
             alt="Hình ảnh đã tải lên từ thiết bị của bạn"
             width={375}
             height={500}
+            style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
           />
         </div>
         <div className={styles.copyLinkContainer}>

@@ -3,7 +3,9 @@ import { useState } from "react";
 import Cookies from 'js-cookie';
 
 const TOKEN_KEY = 'auth_token';
-const API_URL = 'http://localhost:5000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL 
+  ? `${process.env.NEXT_PUBLIC_API_URL}/api` 
+  : 'http://localhost:5000/api';
 
 // Save token to localStorage and Cookies for redundancy
 export const saveToken = (token) => {
