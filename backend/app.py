@@ -17,7 +17,7 @@ app = Flask(__name__, static_folder=None)  # Tắt thư mục static mặc đị
 
 # Cấu hình CORS - chỉ định domain cụ thể thay vì *
 CORS(app, 
-     origins=["http://localhost:3000", "https://ashy-ocean-0e5aab200.6.azurestaticapps.net"], 
+     origins=["http://localhost:3000", "https://ashy-ocean-0e5aab200.6.azurestaticapps.net", "https://7e6a-116-96-47-45.ngrok-free.app"], 
      supports_credentials=True,
      allow_headers=["Content-Type", "Authorization"], 
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -29,7 +29,7 @@ def after_request(response):
     origin = request.headers.get('Origin')
     
     # Nếu request đến từ domain được cho phép
-    if origin in ["http://localhost:3000", "https://ashy-ocean-0e5aab200.6.azurestaticapps.net"]:
+    if origin in ["http://localhost:3000", "https://ashy-ocean-0e5aab200.6.azurestaticapps.net", "https://7e6a-116-96-47-45.ngrok-free.app"]:
         response.headers.add('Access-Control-Allow-Origin', origin)
     else:
         # Hoặc bạn có thể chỉ định domain mặc định nếu không nhận diện được origin

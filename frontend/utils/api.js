@@ -110,7 +110,7 @@ export const clearToken = () => {
 // Tạo instance Axios với cấu hình mặc định
 const api = axios.create({
     baseURL: API_URL,
-    withCredentials: true, // Quan trọng: cho phép gửi cookies
+    withCredentials: false, // Tắt tính năng withCredentials để tránh vấn đề CORS
     headers: {
         'Content-Type': 'application/json',
     },
