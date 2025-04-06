@@ -1,11 +1,10 @@
 import axios from "axios";
 import { useState } from "react";
-import Cookies from 'js-cookie';
 
 const TOKEN_KEY = 'auth_token';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
-// Save token to localStorage and Cookies for redundancy
+// Save token to localStorage
 export const saveToken = (token) => {
   console.log(`Saving token: ${token ? token.substring(0, 15) + '...' : 'null or undefined'}`);
   
@@ -15,20 +14,11 @@ export const saveToken = (token) => {
   }
   
   try {
-    console.log('Saving token to storage...');
+    console.log('Saving token to localStorage...');
     
     // Primary storage: localStorage
     localStorage.setItem(TOKEN_KEY, token);
     console.log('Token saved to localStorage');
-    
-    // Secondary storage: Cookies
-    Cookies.set('token', token, { 
-      expires: 30,
-      path: '/',
-      sameSite: 'lax',
-      secure: window.location.protocol === 'https:'
-    });
-    console.log('Token saved to cookie');
     
     // Verify saved token
     const savedToken = getToken();
@@ -38,11 +28,11 @@ export const saveToken = (token) => {
   }
 };
 
-// Get token from localStorage or Cookies
+// Get token from localStorage
 export const getToken = () => {
   let token = null;
   
-  // Try localStorage first
+  // Try localStorage
   try {
     token = localStorage.getItem(TOKEN_KEY);
     if (token) {
@@ -53,29 +43,11 @@ export const getToken = () => {
     console.warn('Error reading from localStorage:', e);
   }
   
-  // If not found in localStorage, try cookies
-  try {
-    token = Cookies.get('token');
-    if (token) {
-      console.log(`Token found in cookies: ${token.substring(0, 15)}...`);
-      // Sync to localStorage if only found in cookies
-      try {
-        localStorage.setItem(TOKEN_KEY, token);
-        console.log('Token from cookies synced to localStorage');
-      } catch (e) {
-        console.warn('Error syncing token to localStorage:', e);
-      }
-      return token;
-    }
-  } catch (e) {
-    console.warn('Error reading from cookies:', e);
-  }
-  
   console.log('No token found in storage');
   return null;
 };
 
-// Clear token from both storage methods
+// Clear token
 export const clearToken = () => {
   console.log('Clearing token from storage');
   try {
@@ -85,25 +57,18 @@ export const clearToken = () => {
     console.warn('Error removing from localStorage:', e);
   }
   
-  try {
-    Cookies.remove('token', { path: '/' });
-    console.log('Token removed from cookies');
-  } catch (e) {
-    console.warn('Error removing from cookies:', e);
-  }
-  
   // Verify token is cleared
   const remainingToken = getToken();
   if (remainingToken) {
     console.warn(`WARNING: Token still exists after clearing: ${remainingToken.substring(0, 15)}...`);
   } else {
-    console.log('Token successfully cleared from all storage');
+    console.log('Token successfully cleared from storage');
   }
 };
 
 const api = axios.create({
   baseURL: API_URL,
-  withCredentials: true,
+  withCredentials: false, // Không sử dụng cookies
   headers: {
     'Content-Type': 'application/json',
   }
@@ -265,7 +230,7 @@ export const getImageCaption = async (formData) => {
   try {
     console.log(`Gửi request đến: ${API_URL}/caption`);
     const response = await axios.post(`${API_URL}/caption`, formData, {
-      withCredentials: true,
+      withCredentials: false, // Không sử dụng cookies
       headers
     });
     console.log('Caption API response:', response.status);
@@ -300,7 +265,7 @@ export const contributeImage = async (formData) => {
     }
     
     const response = await axios.post(`${API_URL}/contribute`, formData, {
-      withCredentials: true,
+      withCredentials: false, // Không sử dụng cookies
       headers
     });
     console.log('Contribute API response:', response.status);

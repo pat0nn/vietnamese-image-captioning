@@ -1,19 +1,18 @@
 import axios from 'axios';
-import Cookies from 'js-cookie';
 
 // Hằng số
 const TOKEN_KEY = 'auth_token';
 
 // Kiểm tra môi trường và sử dụng API URL phù hợp
 // Khi chạy local development: NEXT_PUBLIC_API_URL=http://localhost:5000/api 
-// Khi sử dụng ngrok: NEXT_PUBLIC_API_URL=https://xxx-xxx-xxx-xxx.ngrok.io/api
+// Khi sử dụng ngrok: NEXT_PUBLIC_API_URL=https://xxx-xxx-xxx-xxx.ngrok-free.app/api
 // Khi triển khai production: NEXT_PUBLIC_API_URL sẽ được đặt thông qua biến môi trường
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 console.log(`Using API URL: ${API_URL}`);
 
 /**
- * Lưu token vào cả localStorage và cookie
+ * Lưu token vào localStorage
  */
 export const saveToken = (token) => {
     console.log(`Saving token: ${token ? token.substring(0, 15) + '...' : 'null or undefined'}`);
@@ -28,14 +27,6 @@ export const saveToken = (token) => {
         localStorage.setItem(TOKEN_KEY, token);
         console.log('Token saved to localStorage');
         
-        // Lưu vào cookie
-        Cookies.set('token', token, { 
-            expires: 30,  // 30 days
-            sameSite: 'lax',
-            path: '/'
-        });
-        console.log('Token saved to cookies');
-        
         // Kiểm tra xem token đã được lưu chưa
         const savedToken = getToken();
         console.log(`Token verification - Retrieved: ${savedToken ? savedToken.substring(0, 15) + '...' : 'null'}`);
@@ -45,12 +36,12 @@ export const saveToken = (token) => {
 };
 
 /**
- * Lấy token từ localStorage hoặc cookie
+ * Lấy token từ localStorage
  */
 export const getToken = () => {
     let token = null;
     
-    // Thử lấy từ localStorage trước
+    // Lấy từ localStorage
     try {
         token = localStorage.getItem(TOKEN_KEY);
         if (token) {
@@ -61,30 +52,12 @@ export const getToken = () => {
         console.warn('Error reading from localStorage:', e);
     }
     
-    // Nếu không có trong localStorage, thử lấy từ cookie
-    try {
-        token = Cookies.get('token');
-        if (token) {
-            console.log(`Token found in cookies: ${token.substring(0, 15)}...`);
-            // Cập nhật lại localStorage nếu chỉ có trong cookie
-            try {
-                localStorage.setItem(TOKEN_KEY, token);
-                console.log('Token from cookies synced to localStorage');
-            } catch (e) {
-                console.warn('Error syncing token to localStorage:', e);
-            }
-            return token;
-        }
-    } catch (e) {
-        console.warn('Error reading from cookies:', e);
-    }
-    
     console.log('No token found in storage');
     return null;
 };
 
 /**
- * Xóa token khỏi cả localStorage và cookie
+ * Xóa token khỏi localStorage
  */
 export const clearToken = () => {
     console.log('Clearing token from storage');
@@ -95,26 +68,19 @@ export const clearToken = () => {
         console.warn('Error removing from localStorage:', e);
     }
     
-    try {
-        Cookies.remove('token', { path: '/' });
-        console.log('Token removed from cookies');
-    } catch (e) {
-        console.warn('Error removing from cookies:', e);
-    }
-    
     // Kiểm tra xem token đã được xóa chưa
     const remainingToken = getToken();
     if (remainingToken) {
         console.warn(`WARNING: Token still exists after clearing: ${remainingToken.substring(0, 15)}...`);
     } else {
-        console.log('Token successfully cleared from all storage');
+        console.log('Token successfully cleared from storage');
     }
 };
 
 // Tạo instance Axios với cấu hình mặc định
 const api = axios.create({
     baseURL: API_URL,
-    withCredentials: true, // Quan trọng: cho phép gửi cookies
+    withCredentials: false, // Không sử dụng cookies nữa
     headers: {
         'Content-Type': 'application/json',
     },

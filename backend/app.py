@@ -19,14 +19,22 @@ app = Flask(__name__, static_folder=None)  # Tắt thư mục static mặc đị
 def is_development():
     return os.environ.get('FLASK_ENV') != 'production'
 
+# Cấu hình các origins được phép
+ALLOWED_ORIGINS = [
+    'https://icy-river-037493600.6.azurestaticapps.net',  # Azure Static Web App URL
+    'http://localhost:3000',  # Local development
+    'http://127.0.0.1:3000'   # Alternative local development
+]
+
 # Configure CORS based on environment
 if is_development():
-    print("Running in development mode with CORS enabled for all origins")
-    CORS(app, resources={r"/*": {"origins": "*", "supports_credentials": True}})
+    print("Running in development mode with specific CORS origins")
+    CORS(app, resources={r"/*": {"origins": ALLOWED_ORIGINS}})
 else:
-    allowed_origins = os.environ.get('ALLOWED_ORIGINS', '*')
-    print(f"Running in production mode with CORS enabled for: {allowed_origins}")
-    CORS(app, resources={r"/*": {"origins": allowed_origins, "supports_credentials": True}})
+    allowed_origins = os.environ.get('ALLOWED_ORIGINS', ','.join(ALLOWED_ORIGINS))
+    allowed_origins_list = [origin.strip() for origin in allowed_origins.split(',')]
+    print(f"Running in production mode with CORS enabled for: {allowed_origins_list}")
+    CORS(app, resources={r"/*": {"origins": allowed_origins_list}})
 
 # SECRET_KEY mới, đảm bảo dài và đủ mạnh (nên đặt trong biến môi trường trong production)
 app.config['SECRET_KEY'] = 'hNOg9JHiXCjUcqQzNtvYFKa7eksRLdwSGIfupW5M23T4vPDyZm'
@@ -168,7 +176,7 @@ def decode_token(token):
         return None
 
 def get_current_user(request):
-    # Try to get token from Authorization header first
+    # Get token from Authorization header
     auth_header = request.headers.get('Authorization')
     print(f"Auth header: {auth_header if auth_header else 'None'}")
     
@@ -176,37 +184,18 @@ def get_current_user(request):
     
     if auth_header and len(auth_header.split(" ")) > 1:
         token = auth_header.split(" ")[1]
-        print(f"Token extracted from Auth header: {token[:10]}...")
-    else:
-        # Then try to get from cookies
-        token = request.cookies.get('token')
-        print(f"Cookie token: {token[:10] if token else 'None'}...")
-    
-    # If still no token, check if it's in the query parameters (for debugging only)
-    if not token and 'token' in request.args:
-        token = request.args.get('token')
-        print(f"Token from query params: {token[:10]}...")
-    
-    # Finally, check if it's in the form data
-    if not token and request.form and 'token' in request.form:
-        token = request.form.get('token')
-        print(f"Token from form data: {token[:10]}...")
-    
-    # If still no token, check if it's in the JSON body
-    if not token and request.is_json and 'token' in request.json:
-        token = request.json.get('token')
-        print(f"Token from JSON body: {token[:10]}...")
+        print(f"Token extracted from Auth header: {token[:10] if token else 'None'}...")
     
     if not token:
         print("No token found in request")
         return None
     
     # Debug: in trực tiếp token để kiểm tra
-    print(f"Full token to decode: {token}")
+    print(f"Token to decode: {token[:15] if token else 'None'}...")
     
     # Decode and verify the token
     try:
-        print(f"Decoding token: {token[:10]}...")
+        print(f"Decoding token: {token[:10] if token else 'None'}...")
         user_data = decode_token(token)
         if user_data:
             print(f"Token valid for user: {user_data.get('username')}")
@@ -323,29 +312,12 @@ def register():
         # Generate token
         token = generate_token(user_id, username)
         
-        # Create response
-        response = jsonify({
+        # Create response with token in body only
+        return jsonify({
             'message': 'User created successfully',
             'user': {'id': user_id, 'username': username},
             'token': token
-        })
-        
-        # Set cookie
-        print(f"Setting token cookie for user: {username}")
-        max_age = 30 * 24 * 60 * 60  # 30 days in seconds
-        expires = datetime.now() + timedelta(days=30)
-        response.set_cookie(
-            'token', 
-            token, 
-            max_age=max_age, 
-            expires=expires, 
-            httponly=False,  # Allow JavaScript access
-            secure=request.is_secure,
-            samesite='Lax',
-            path='/'
-        )
-        
-        return response, 201
+        }), 201
     except Exception as e:
         print(f"Registration error: {str(e)}")
         return jsonify({'error': str(e)}), 500
@@ -382,29 +354,12 @@ def login():
             # Generate token
             token = generate_token(user_id, username)
             
-            # Create response
-            response = jsonify({
+            # Return token in response body only
+            return jsonify({
                 'message': 'Login successful',
                 'user': {'id': user_id, 'username': username},
                 'token': token
-            })
-            
-            # Set cookie
-            print(f"Setting token cookie for user: {username}")
-            max_age = 30 * 24 * 60 * 60  # 30 days in seconds
-            expires = datetime.now() + timedelta(days=30)
-            response.set_cookie(
-                'token', 
-                token, 
-                max_age=max_age, 
-                expires=expires, 
-                httponly=False,  # Allow JavaScript access
-                secure=request.is_secure,
-                samesite='Lax',
-                path='/'
-            )
-            
-            return response, 200
+            }), 200
         else:
             return jsonify({'error': 'Invalid username or password'}), 401
     except Exception as e:
@@ -416,18 +371,9 @@ def login():
 def logout():
     print("Logout request received")
     
-    # Tạo response và đặt cookie hết hạn
-    response = jsonify({'message': 'Logged out successfully'})
-    
-    # Xóa cookie bằng nhiều phương pháp để đảm bảo hoạt động trên mọi trình duyệt
-    # Phương pháp 1: Đặt giá trị cookie là rỗng và cho hết hạn
-    response.set_cookie('token', '', expires=0, max_age=0, path='/')
-    
-    # Phương pháp 2: Sử dụng delete_cookie
-    response.delete_cookie('token', path='/')
-    
-    print("Token cookie cleared in logout response")
-    return response
+    # Since we're no longer using cookies, logout is just a client-side operation
+    # But we'll still provide an endpoint for consistency
+    return jsonify({'message': 'Logged out successfully'}), 200
 
 # Get current user endpoint
 @app.route('/api/user', methods=['GET'])
