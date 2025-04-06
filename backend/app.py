@@ -14,8 +14,7 @@ from datetime import datetime, timedelta
 import jwt
 
 app = Flask(__name__, static_folder=None)  # Tắt thư mục static mặc định
-# Cập nhật CORS để cho phép yêu cầu từ bất kỳ origin nào và hỗ trợ credentials
-CORS(app, resources={r"/*": {"origins": "*", "supports_credentials": True, "expose_headers": ["Authorization"]}})
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000", "supports_credentials": True}})
 
 # SECRET_KEY mới, đảm bảo dài và đủ mạnh (nên đặt trong biến môi trường trong production)
 app.config['SECRET_KEY'] = 'hNOg9JHiXCjUcqQzNtvYFKa7eksRLdwSGIfupW5M23T4vPDyZm'
@@ -329,8 +328,8 @@ def register():
             max_age=max_age, 
             expires=expires, 
             httponly=False,  # Allow JavaScript access
-            secure=True,     # Use secure cookies with HTTPS
-            samesite='None', # Allow cross-site cookies for Azure
+            secure=request.is_secure,
+            samesite='Lax',
             path='/'
         )
         
@@ -388,8 +387,8 @@ def login():
                 max_age=max_age, 
                 expires=expires, 
                 httponly=False,  # Allow JavaScript access
-                secure=True,     # Use secure cookies with HTTPS
-                samesite='None', # Allow cross-site cookies for Azure
+                secure=request.is_secure,
+                samesite='Lax',
                 path='/'
             )
             
