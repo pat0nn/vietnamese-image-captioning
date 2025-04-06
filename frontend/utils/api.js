@@ -233,14 +233,16 @@ export const captionImage = async (file) => {
     const formData = new FormData();
     formData.append('file', file);
     
-    const headers = {
-        'Content-Type': 'multipart/form-data'
-    };
-    
     try {
         console.log('Gửi yêu cầu tạo caption cho ảnh');
+        console.log('Tên file:', file.name);
+        
+        // KHÔNG đặt Content-Type trong headers, để axios tự đặt với boundary đúng
         const response = await api.post('/caption', formData, {
-            headers
+            headers: {
+                // Chỉ thêm các headers cần thiết, không ghi đè Content-Type
+                'Accept': 'application/json'
+            }
         });
         return response.data;
     } catch (error) {
@@ -258,20 +260,19 @@ export const contributeImage = async (file, caption, skipAiCaption = false) => {
         formData.append('skipAiCaption', 'true');
     }
     
-    const headers = {
-        'Content-Type': 'multipart/form-data'
-    };
-    
     try {
         console.log('Gửi đóng góp ảnh và caption');
         // Log formData để debug
         console.log('FormData contents:');
         for (let pair of formData.entries()) {
-            console.log(pair[0] + ': ' + pair[1]);
+            console.log(pair[0] + ': ' + (pair[0] === 'image' ? pair[1].name : pair[1]));
         }
         
         const response = await api.post('/contribute', formData, {
-            headers
+            headers: {
+                // Chỉ thêm các headers cần thiết, không ghi đè Content-Type
+                'Accept': 'application/json'
+            }
         });
         return response.data;
     } catch (error) {
