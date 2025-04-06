@@ -9,14 +9,13 @@ const nextConfig = {
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api'
   },
-  // Ensure all paths that should be pre-rendered are included
+  // Chỉ bao gồm các trang thực sự tồn tại trong thư mục pages
   exportPathMap: async function() {
     return {
       '/': { page: '/' },
-      '/login': { page: '/login' },
-      '/register': { page: '/register' },
-      '/contribute': { page: '/contribute' },
-      '/contributions': { page: '/contributions' }
+      '/admin': { page: '/admin' },
+      '/success': { page: '/success' },
+      '/profile': { page: '/profile' }
     }
   }
 };

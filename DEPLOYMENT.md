@@ -33,12 +33,12 @@ Dự án này được triển khai với phần frontend trên Azure Static Web
 1. Đăng nhập vào Azure Portal và tạo một Static Web App mới
 2. Liên kết với repository GitHub của bạn
 3. Cấu hình triển khai:
-   - App location: `/frontend`
+   - App location: `frontend`
    - Api location: (để trống)
    - Output location: `out`
-   - Build command: `npm run build && npm run export`
+   - Build command: `npm run build`
 
-4. Sau khi triển khai, cấu hình biến môi trường trong Azure Static Web App:
+4. Sau khi triển khai, cấu hình biến môi trường trong Azure Static Web Apps:
    - Thêm biến môi trường `NEXT_PUBLIC_API_URL` với giá trị là URL ngrok của backend (ví dụ: `https://xxxx-xxxx-xxxx.ngrok.io/api`)
 
 ### Tùy chọn 2: Sử dụng GitHub Actions
@@ -46,9 +46,24 @@ Dự án này được triển khai với phần frontend trên Azure Static Web
 1. Fork repository này vào GitHub của bạn
 2. Tạo một Azure Static Web App mới từ Azure Portal
 3. Trong quá trình tạo, liên kết với repository GitHub đã fork
-4. Azure sẽ tự động tạo workflow file và thêm secret vào GitHub repository
-5. Cấu hình biến môi trường trong Azure Portal:
-   - Thêm biến môi trường `NEXT_PUBLIC_API_URL` với giá trị là URL ngrok của backend
+4. Azure sẽ tự động tạo workflow file `.github/workflows/azure-static-web-apps.yml` và thêm secret `AZURE_STATIC_WEB_APPS_API_TOKEN` vào GitHub repository của bạn
+5. Thêm biến môi trường `NEXT_PUBLIC_API_URL` vào GitHub repository secrets:
+   - Vào Settings > Secrets and variables > Actions
+   - Thêm repository secret mới với tên `NEXT_PUBLIC_API_URL` và giá trị là URL ngrok của backend
+
+## Khắc phục sự cố triển khai
+
+1. **Lỗi "Cannot find module for page"**: 
+   - Lỗi này xảy ra khi `exportPathMap` trong `next.config.js` chứa đường dẫn không tồn tại trong thư mục `pages/`
+   - Đảm bảo các trang được liệt kê trong `exportPathMap` đều tồn tại trong thư mục `pages/`
+
+2. **Lỗi "Failed to load config"**: 
+   - Kiểm tra cú pháp trong `next.config.js`
+   - Đảm bảo không có lỗi JavaScript trong file cấu hình
+
+3. **Lỗi ngắt kết nối ngrok**:
+   - Nếu sử dụng ngrok miễn phí, session sẽ hết hạn sau 2 giờ
+   - Bạn cần khởi động lại ngrok và cập nhật biến môi trường `NEXT_PUBLIC_API_URL` trong Azure Static Web Apps
 
 ## Kiểm tra kết nối
 
@@ -58,13 +73,7 @@ Dự án này được triển khai với phần frontend trên Azure Static Web
 
 ## Lưu ý quan trọng
 
-1. **Mỗi lần khởi động lại ngrok, URL sẽ thay đổi**. Bạn cần cập nhật biến môi trường `NEXT_PUBLIC_API_URL` trong Azure Static Web App.
+1. **Mỗi lần khởi động lại ngrok, URL sẽ thay đổi**. Bạn cần cập nhật biến môi trường `NEXT_PUBLIC_API_URL` trong Azure Static Web Apps (hoặc GitHub Secrets nếu sử dụng GitHub Actions).
 2. Nếu sử dụng ngrok miễn phí, session sẽ hết hạn sau 2 giờ, bạn cần khởi động lại và cập nhật URL.
 3. Trong môi trường production thực tế, nên triển khai backend trên một dịch vụ cloud thay vì sử dụng ngrok.
-4. File `staticwebapp.config.json` đã được cấu hình để cho phép CORS từ các URL ngrok, nếu cần thêm domains khác, hãy cập nhật file này.
-
-## Khắc phục sự cố
-
-1. **Lỗi CORS**: Kiểm tra file `staticwebapp.config.json` và cấu hình CORS trong `app.py`
-2. **Lỗi kết nối API**: Đảm bảo URL ngrok đúng và backend đang chạy
-3. **Lỗi đăng nhập/đăng ký**: Kiểm tra kết nối database và cấu hình backend 
+4. File `staticwebapp.config.json` đã được cấu hình để cho phép CORS từ các URL ngrok, nếu cần thêm domains khác, hãy cập nhật file này. 
