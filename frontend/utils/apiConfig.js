@@ -8,7 +8,7 @@
  */
 
 // URL ngrok hiện tại (thay đổi khi tunnel mới được tạo)
-const NGROK_URL = 'https://3a9d-116-96-47-45.ngrok-free.app';
+const NGROK_URL = 'https://7e6a-116-96-47-45.ngrok-free.app';
 
 // URL API cho môi trường phát triển
 const DEV_API_URL = 'http://localhost:5000/api';
