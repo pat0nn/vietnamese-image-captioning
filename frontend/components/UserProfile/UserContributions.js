@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { getUserContributions, updateContribution, deleteContribution } from '../../utils/requestHelper';
 import styles from '../../styles/userProfile.module.css';
+import axios from 'axios';
 
-const UserContributions = () => {
+const UserContributions = ({ token }) => {
   const [contributions, setContributions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -12,6 +13,9 @@ const UserContributions = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [fullSizeImage, setFullSizeImage] = useState(null);
   const [validationError, setValidationError] = useState(null);
+
+  // API base URL from environment variable or default
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000';
 
   useEffect(() => {
     fetchUserContributions();
@@ -57,13 +61,22 @@ const UserContributions = () => {
     try {
       setLoading(true);
       const response = await getUserContributions();
-      setContributions(response.contributions || []);
+      const preparedContributions = prepareContributions(response.contributions || []);
+      setContributions(preparedContributions);
     } catch (err) {
       console.error('Error fetching contributions:', err);
       setError('Không thể tải danh sách đóng góp. Vui lòng thử lại sau.');
     } finally {
       setLoading(false);
     }
+  };
+
+  const prepareContributions = (items) => {
+    return items.map(item => ({
+      ...item,
+      src: `${API_BASE_URL}/uploads/${item.image_path}`,
+      uploadDate: new Date(item.created_at).toLocaleDateString(),
+    }));
   };
 
   const handleEdit = (item) => {
@@ -126,7 +139,7 @@ const UserContributions = () => {
   // Mở ảnh độ phân giải đầy đủ
   const openFullSizeImage = (item) => {
     setFullSizeImage({
-      src: `http://localhost:5000/uploads/${item.image_path}`,
+      src: `${API_BASE_URL}/uploads/${item.image_path}`,
       alt: item.user_caption || 'Hình ảnh đóng góp',
       caption: item.user_caption || 'Không có mô tả'
     });
@@ -158,15 +171,15 @@ const UserContributions = () => {
     <div className={styles.contributionsContainer}>
       <h2>Các đóng góp của bạn</h2>
       
-      {contributions.map((item) => (
+      {contributions.map((item, index) => (
         <div key={item.image_id} className={styles.contributionItem}>
           <div 
             className={styles.contributionImage}
             onClick={() => openFullSizeImage(item)}
           >
             <Image 
-              src={`http://localhost:5000/uploads/${item.image_path}`}
-              alt={item.user_caption || 'Hình ảnh đóng góp'}
+              src={`${API_BASE_URL}/uploads/${item.image_path}`}
+              alt={`Contribution ${index}`}
               width={200}
               height={200}
               style={{ objectFit: 'cover', cursor: 'pointer' }}
@@ -217,7 +230,7 @@ const UserContributions = () => {
                   </div>
                 )}
                 <div className={styles.metadata}>
-                  <p>Thời gian: {new Date(item.created_at).toLocaleString()}</p>
+                  <p>Thời gian: {item.uploadDate}</p>
                 </div>
                 <div className={styles.itemActions}>
                   <button 

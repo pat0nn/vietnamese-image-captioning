@@ -3,7 +3,7 @@ import { useState } from "react";
 import Cookies from 'js-cookie';
 
 const TOKEN_KEY = 'auth_token';
-const API_URL = 'http://localhost:5000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 // Save token to localStorage and Cookies for redundancy
 export const saveToken = (token) => {
@@ -25,8 +25,8 @@ export const saveToken = (token) => {
     Cookies.set('token', token, { 
       expires: 30,
       path: '/',
-      sameSite: 'lax',
-      secure: window.location.protocol === 'https:'
+      sameSite: 'none',
+      secure: true
     });
     console.log('Token saved to cookie');
     

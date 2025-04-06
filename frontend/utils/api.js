@@ -25,7 +25,8 @@ export const saveToken = (token) => {
         // Lưu vào cookie
         Cookies.set('token', token, { 
             expires: 30,  // 30 days
-            sameSite: 'lax',
+            sameSite: 'none',
+            secure: true,
             path: '/'
         });
         console.log('Token saved to cookies');

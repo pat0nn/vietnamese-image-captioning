@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['localhost'],
+    domains: ['localhost', 'ngrok.io', 'ngrok-free.app'],
     remotePatterns: [
       {
         protocol: 'http',
@@ -11,11 +11,32 @@ const nextConfig = {
       },
       {
         protocol: 'https',
+        hostname: '*.ngrok-free.app',
+        pathname: '/uploads/**',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.ngrok.io',
+        pathname: '/uploads/**',
+      },
+      {
+        protocol: 'http',
+        hostname: process.env.NEXT_PUBLIC_BACKEND_HOST || 'localhost',
+        port: process.env.NEXT_PUBLIC_BACKEND_PORT || '5000',
+        pathname: '/uploads/**',
+      },
+      {
+        protocol: 'https',
+        hostname: process.env.NEXT_PUBLIC_BACKEND_HOST,
+        pathname: '/uploads/**',
+      },
+      {
+        protocol: 'https',
         hostname: '*.azureml.ms',
         pathname: '/uploads/**',
       },
     ],
-    unoptimized: process.env.NODE_ENV === 'production',
+    unoptimized: true,
   },
   output: 'export',
   trailingSlash: true,

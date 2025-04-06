@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import styles from '../styles/admin.module.css';
 
@@ -7,6 +7,9 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // API base URL from environment variable or default
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000';
+
   useEffect(() => {
     fetchContributions();
   }, []);
@@ -14,7 +17,7 @@ export default function Admin() {
   const fetchContributions = async () => {
     try {
       setLoading(true);
-      const response = await fetch('http://localhost:5000/api/contributions');
+      const response = await fetch(`${API_BASE_URL}/api/contributions`);
       const data = await response.json();
       
       if (!response.ok) {
@@ -50,7 +53,7 @@ export default function Admin() {
             {contributions.map((item) => (
               <div key={item.id} className={styles.card}>
                 <img 
-                  src={`http://localhost:5000/${item.image_path}`} 
+                  src={`${API_BASE_URL}/${item.image_path}`} 
                   alt={`Đóng góp ${item.id}`}
                   className={styles.image}
                 />
