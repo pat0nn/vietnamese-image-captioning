@@ -3,6 +3,11 @@ import Image from 'next/image';
 import { getUserContributions, updateContribution, deleteContribution } from '../../utils/requestHelper';
 import styles from '../../styles/userProfile.module.css';
 
+// Lấy API_URL từ biến môi trường hoặc giá trị mặc định
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+// Xử lý để lấy base URL từ API_URL
+const BASE_URL = API_URL.replace(/\/api$/, '');
+
 const UserContributions = () => {
   const [contributions, setContributions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -56,7 +61,9 @@ const UserContributions = () => {
   const fetchUserContributions = async () => {
     try {
       setLoading(true);
+      console.log('Fetching user contributions...');
       const response = await getUserContributions();
+      console.log('User contributions response:', response);
       setContributions(response.contributions || []);
     } catch (err) {
       console.error('Error fetching contributions:', err);
@@ -125,8 +132,11 @@ const UserContributions = () => {
 
   // Mở ảnh độ phân giải đầy đủ
   const openFullSizeImage = (item) => {
+    console.log(`Image path: ${item.image_path}`);
+    console.log(`Base URL: ${BASE_URL}`);
+    
     setFullSizeImage({
-      src: `http://localhost:5000/uploads/${item.image_path}`,
+      src: `${BASE_URL}/uploads/${item.image_path}`,
       alt: item.user_caption || 'Hình ảnh đóng góp',
       caption: item.user_caption || 'Không có mô tả'
     });
@@ -165,7 +175,7 @@ const UserContributions = () => {
             onClick={() => openFullSizeImage(item)}
           >
             <Image 
-              src={`http://localhost:5000/uploads/${item.image_path}`}
+              src={`${BASE_URL}/uploads/${item.image_path}`}
               alt={item.user_caption || 'Hình ảnh đóng góp'}
               width={200}
               height={200}

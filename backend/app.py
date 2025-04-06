@@ -548,10 +548,14 @@ def get_contributions():
 def get_user_contributions():
     # Check if user is logged in
     user_data = get_current_user(request)
+    print(f"User data from token for contributions: {user_data}")
+    
     if not user_data:
+        print("No user data, authentication required")
         return jsonify({'error': 'Authentication required'}), 401
     
     user_id = user_data['sub']
+    print(f"Getting contributions for user_id: {user_id}")
     
     try:
         conn = get_db_connection()
@@ -562,7 +566,14 @@ def get_user_contributions():
             WHERE user_id = %s
             ORDER BY created_at DESC
         """, (user_id,))
+        
         contributions = cursor.fetchall()
+        print(f"Found {len(contributions)} contributions for user_id {user_id}")
+        
+        # Chuyển đổi đường dẫn ảnh để chứa đường dẫn đầy đủ nếu cần
+        for contribution in contributions:
+            if contribution['image_path'] and not contribution['image_path'].startswith('/'):
+                contribution['image_path'] = contribution['image_path']
         
         cursor.close()
         conn.close()

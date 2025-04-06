@@ -284,12 +284,32 @@ export const contributeImage = async (formData) => {
 
 export const getUserContributions = async () => {
   console.log('Getting user contributions');
+  
+  const token = getToken();
+  if (!token) {
+    console.log('No token available for getting user contributions');
+    return { contributions: [] };
+  }
+  
+  console.log(`Using token: ${token.substring(0, 15)}...`);
+  console.log(`API URL: ${API_URL}`);
+  
   try {
+    console.log('Sending request to get user contributions...');
     const response = await api.get('/user/contributions');
-    console.log('User contributions response:', response.status);
+    console.log('User contributions response status:', response.status);
+    console.log('User contributions data:', response.data);
     return response.data;
   } catch (error) {
-    console.error('Get contributions error:', error.response?.data || error.message);
+    console.error('Get contributions error:', error);
+    console.error('Error details:', error.response?.data || 'No response data');
+    console.error('Error status:', error.response?.status);
+    
+    if (error.response && error.response.status === 401) {
+      console.log('Unauthorized when getting contributions, clearing token');
+      clearToken();
+    }
+    
     throw error;
   }
 };

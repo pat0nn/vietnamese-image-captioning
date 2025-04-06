@@ -9,6 +9,14 @@ fi
 # Set environment variables
 export FLASK_APP=app.py
 export FLASK_ENV=development
+export ALLOWED_ORIGINS="http://localhost:3000,https://icy-river-037493600.6.azurestaticapps.net"
+
+# Print important information
+echo "-------------------------------------------------------"
+echo "🌐 Starting backend with CORS allowed for:"
+echo "   - http://localhost:3000"
+echo "   - https://icy-river-037493600.6.azurestaticapps.net"
+echo "-------------------------------------------------------"
 
 # Start Flask in the background
 echo "Starting Flask server..."
@@ -38,10 +46,17 @@ fi
 
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "🌐 Backend API is now available at: $NGROK_URL/api"
+echo "🌐 Images are now available at: $NGROK_URL/uploads"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo
 echo "✨ Use this URL when configuring your frontend environment:"
 echo "NEXT_PUBLIC_API_URL=$NGROK_URL/api"
+echo
+echo "✨ Testing CORS configuration..."
+curl -s -I -X OPTIONS -H "Origin: https://icy-river-037493600.6.azurestaticapps.net" \
+    -H "Access-Control-Request-Method: GET" \
+    -H "Access-Control-Request-Headers: Authorization, Content-Type" \
+    "$NGROK_URL/api/test" | grep -i "access-control"
 echo
 echo "Press Ctrl+C to stop the server"
 
