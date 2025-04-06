@@ -18,6 +18,13 @@ echo "   - http://localhost:3000"
 echo "   - https://icy-river-037493600.6.azurestaticapps.net"
 echo "-------------------------------------------------------"
 
+# Create uploads directory if it doesn't exist
+mkdir -p uploads
+
+# Create a test file in uploads for testing
+echo "This is a test file to verify uploads directory access" > uploads/test-image.txt
+echo "Created test file: uploads/test-image.txt"
+
 # Start Flask in the background
 echo "Starting Flask server..."
 python app.py &
@@ -55,8 +62,11 @@ echo
 echo "✨ LƯU Ý QUAN TRỌNG: Bạn cần xác nhận URL ngrok trước khi sử dụng!"
 echo "   1. Mở trình duyệt và truy cập: $NGROK_URL/api/ngrok-ready"
 echo "   2. Nhấn nút 'Visit Site' để xác nhận URL"
-echo "   3. Khi thấy thông báo JSON 'success: true', URL đã được xác nhận"
-echo "   4. Bạn có thể tiếp tục sử dụng ứng dụng sau khi xác nhận URL"
+echo "   3. Tiếp tục truy cập: $NGROK_URL/uploads/test-image.txt"
+echo "   4. Nhấn 'Visit Site' một lần nữa nếu thấy thông báo xác nhận"
+echo "   5. Khi thấy văn bản 'This is a test file...', URL đã được xác nhận"
+echo "   6. Mở trang kiểm tra: https://icy-river-037493600.6.azurestaticapps.net/test-ngrok"
+echo "   7. Cập nhật URL trong Azure Portal nếu cần"
 echo
 echo "✨ Testing CORS configuration..."
 curl -s -I -X OPTIONS -H "Origin: https://icy-river-037493600.6.azurestaticapps.net" \

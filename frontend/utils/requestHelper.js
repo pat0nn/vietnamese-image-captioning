@@ -77,6 +77,8 @@ const api = axios.create({
 // Add token to requests if available
 api.interceptors.request.use(
   (config) => {
+    console.log(`Request to: ${config.url} [${config.method}]`);
+    
     const token = getToken();
     if (token) {
       console.log(`Adding token to request: ${token.substring(0, 15)}...`);
@@ -87,7 +89,7 @@ api.interceptors.request.use(
     
     // Thêm param ngrok skip browser warning cho tất cả request
     // Kiểm tra xem URL hiện tại có chứa ngrok không
-    if (API_URL.includes('ngrok')) {
+    if (API_URL.includes('ngrok') && !config.url.includes('_ngrok_skip_browser_warning')) {
       // Thêm query param để ngrok không hiển thị trang cảnh báo
       const separator = config.url.includes('?') ? '&' : '?';
       config.url = `${config.url}${separator}_ngrok_skip_browser_warning=true`;
@@ -102,30 +104,38 @@ api.interceptors.request.use(
   }
 );
 
-// Handle response and detect auth errors
+// Add response interceptor for detailed logging
 api.interceptors.response.use(
   (response) => {
-    // If response contains new token, update
-    if (response.data && response.data.token) {
-      console.log('New token received in response, updating');
-      saveToken(response.data.token);
+    console.log(`Response from: ${response.config.url} [${response.status}]`);
+    
+    // Log content type
+    const contentType = response.headers['content-type'] || '';
+    console.log(`Response content-type: ${contentType}`);
+    
+    // Check if the response is HTML instead of JSON
+    if (contentType.includes('text/html')) {
+      console.error('⚠️ Received HTML response instead of JSON!');
+      
+      // If this is from ngrok, log detailed message
+      if (API_URL.includes('ngrok')) {
+        console.error('This is likely the ngrok warning page. Please visit the URL directly.');
+        console.error(`Try opening: ${API_URL}/ngrok-ready in your browser.`);
+      }
     }
     
     return response;
   },
   (error) => {
-    console.error('API error:', error);
-    
-    // If 401 Unauthorized error, clear token and notify
-    if (error.response && error.response.status === 401) {
-      console.warn('401 Unauthorized error - clearing authentication');
-      clearToken();
-      // You might dispatch an event or action to update UI
-      window.dispatchEvent(new CustomEvent('auth-error', { 
-        detail: { message: 'Your session has expired. Please log in again.' } 
-      }));
+    if (error.response) {
+      console.error(`Error response from: ${error.config.url} [${error.response.status}]`);
+      console.error('Error data:', error.response.data);
+      console.error('Error headers:', error.response.headers);
+    } else if (error.request) {
+      console.error('No response received:', error.request);
+    } else {
+      console.error('Error setting up request:', error.message);
     }
-    
     return Promise.reject(error);
   }
 );
@@ -323,8 +333,9 @@ export const getUserContributions = async () => {
     console.log('Sending request to get user contributions...');
     
     // Thêm tham số để ngăn ngrok hiển thị trang xác nhận
-    const url = `${API_URL}/user/contributions?_ngrok_skip_browser_warning=true`;
-    console.log(`Using URL with ngrok skip parameter: ${url}`);
+    // Không đặt tham số trực tiếp ở đây để tránh trùng lặp với interceptor
+    const url = `${API_URL}/user/contributions`; 
+    console.log(`Using URL: ${url}`);
     
     const response = await api.get(url);
     
@@ -342,6 +353,17 @@ export const getUserContributions = async () => {
     
     console.log('User contributions response status:', response.status);
     console.log('User contributions data:', response.data);
+    
+    // Check if contributions exist but are empty
+    if (response.data && Array.isArray(response.data.contributions)) {
+      console.log(`Received ${response.data.contributions.length} contributions`);
+      if (response.data.contributions.length === 0) {
+        console.log('No contributions found for user');
+      }
+    } else {
+      console.log('Invalid contributions data structure:', response.data);
+    }
+    
     return response.data;
   } catch (error) {
     console.error('Get contributions error:', error);

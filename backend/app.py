@@ -12,6 +12,7 @@ from transformers import VisionEncoderDecoderModel, ViTImageProcessor, AutoToken
 import bcrypt
 from datetime import datetime, timedelta
 import jwt
+import traceback
 
 app = Flask(__name__, static_folder=None)  # Tắt thư mục static mặc định
 
@@ -176,57 +177,50 @@ def decode_token(token):
         return None
 
 def get_current_user(request):
-    # Get token from Authorization header
+    """
+    Get user data from JWT token in request header.
+    """
+    # Log request headers for debugging
+    print("-"*40)
+    print("get_current_user called")
     auth_header = request.headers.get('Authorization')
-    print(f"Auth header: {auth_header if auth_header else 'None'}")
+    print(f"Auth header: {auth_header[:25] if auth_header else 'None'}...")
     
-    token = None
-    
-    if auth_header and len(auth_header.split(" ")) > 1:
-        token = auth_header.split(" ")[1]
-        print(f"Token extracted from Auth header: {token[:10] if token else 'None'}...")
-    
-    if not token:
-        print("No token found in request")
+    if not auth_header:
+        print("No Authorization header found")
         return None
     
-    # Debug: in trực tiếp token để kiểm tra
-    print(f"Token to decode: {token[:15] if token else 'None'}...")
-    
-    # Decode and verify the token
     try:
-        print(f"Decoding token: {token[:10] if token else 'None'}...")
-        user_data = decode_token(token)
-        if user_data:
-            print(f"Token valid for user: {user_data.get('username')}")
-            
-            # In ra token đã xác thực để kiểm tra
-            print(f"User data from token: {user_data}")
-            
-            # Thử một cách tiếp cận khác nếu cần
-            if user_data.get('sub') is None:
-                print("WARNING: Token missing 'sub' field, trying to extract manually")
-                # Nếu không tìm thấy sub, thử tìm user_id cách thủ công
-                # Đây là cách xử lý tạm thời, không nên dùng trong production
-                try:
-                    conn = get_db_connection()
-                    cursor = conn.cursor()
-                    cursor.execute("SELECT id FROM users WHERE username = %s", (user_data.get('username'),))
-                    result = cursor.fetchone()
-                    if result:
-                        user_data['sub'] = result[0]
-                        print(f"Manually set user_id: {user_data['sub']}")
-                    cursor.close()
-                    conn.close()
-                except Exception as e:
-                    print(f"Error getting user_id: {str(e)}")
-            
-            return user_data
-        else:
-            print("Token decode returned None (invalid token)")
-        return user_data
+        # Extract token from header
+        auth_parts = auth_header.split()
+        if len(auth_parts) != 2 or auth_parts[0].lower() != 'bearer':
+            print(f"Invalid Authorization format: {auth_header[:15]}...")
+            return None
+        
+        token = auth_parts[1]
+        print(f"Token extracted: {token[:15]}...")
+        
+        # Decode token
+        payload = jwt.decode(token, app.config.get('JWT_SECRET_KEY'), algorithms=['HS256'])
+        print(f"Token decoded successfully: {payload}")
+        
+        # Check if token is expired
+        if 'exp' in payload and datetime.utcnow() > datetime.utcfromtimestamp(payload['exp']):
+            print(f"Token expired at {datetime.utcfromtimestamp(payload['exp'])}")
+            return None
+        
+        return payload
+    
+    except jwt.ExpiredSignatureError:
+        print("Token has expired")
+        return None
+    except jwt.InvalidTokenError as e:
+        print(f"Invalid token: {str(e)}")
+        return None
     except Exception as e:
-        print(f"Token verification error: {str(e)}")
+        print(f"Error decoding token: {str(e)}")
+        traceback_str = traceback.format_exc()
+        print(f"Traceback: {traceback_str}")
         return None
 
 # Load models
@@ -546,9 +540,18 @@ def get_contributions():
 # API to get user's contributions
 @app.route('/api/user/contributions', methods=['GET'])
 def get_user_contributions():
+    # Log all request information for troubleshooting
+    print("="*50)
+    print("GET /api/user/contributions request received")
+    print(f"Headers: {dict(request.headers)}")
+    print(f"Query params: {dict(request.args)}")
+    print(f"Remote addr: {request.remote_addr}")
+    auth_header = request.headers.get('Authorization', '')
+    print(f"Authorization header: {auth_header[:15]}... (truncated)")
+    
     # Check if user is logged in
     user_data = get_current_user(request)
-    print(f"User data from token for contributions: {user_data}")
+    print(f"User data from token: {user_data}")
     
     if not user_data:
         print("No user data, authentication required")
@@ -570,6 +573,10 @@ def get_user_contributions():
         contributions = cursor.fetchall()
         print(f"Found {len(contributions)} contributions for user_id {user_id}")
         
+        # Print the first contribution data if available
+        if contributions and len(contributions) > 0:
+            print(f"First contribution: {contributions[0]}")
+        
         # Chuyển đổi đường dẫn ảnh để chứa đường dẫn đầy đủ nếu cần
         for contribution in contributions:
             if contribution['image_path'] and not contribution['image_path'].startswith('/'):
@@ -578,13 +585,21 @@ def get_user_contributions():
         cursor.close()
         conn.close()
         
-        return jsonify({
+        # Prepare response
+        response_data = {
             'success': True,
             'contributions': contributions
-        })
+        }
+        print(f"Sending response with {len(contributions)} contributions")
+        print("="*50)
+        
+        return jsonify(response_data)
         
     except Exception as e:
         print(f"Error getting user contributions: {str(e)}")
+        traceback_str = traceback.format_exc()
+        print(f"Traceback: {traceback_str}")
+        print("="*50)
         return jsonify({'error': str(e)}), 500
 
 # Thêm endpoint mới để xác nhận ngrok URL
