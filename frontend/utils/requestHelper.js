@@ -25,8 +25,8 @@ export const saveToken = (token) => {
     Cookies.set('token', token, { 
       expires: 30,
       path: '/',
-      sameSite: 'none',
-      secure: true
+      sameSite: 'lax',
+      secure: window.location.protocol === 'https:'
     });
     console.log('Token saved to cookie');
     

@@ -14,7 +14,19 @@ from datetime import datetime, timedelta
 import jwt
 
 app = Flask(__name__, static_folder=None)  # Tắt thư mục static mặc định
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000", "supports_credentials": True}})
+
+# Determine environment - running locally or in production
+def is_development():
+    return os.environ.get('FLASK_ENV') != 'production'
+
+# Configure CORS based on environment
+if is_development():
+    print("Running in development mode with CORS enabled for all origins")
+    CORS(app, resources={r"/*": {"origins": "*", "supports_credentials": True}})
+else:
+    allowed_origins = os.environ.get('ALLOWED_ORIGINS', '*')
+    print(f"Running in production mode with CORS enabled for: {allowed_origins}")
+    CORS(app, resources={r"/*": {"origins": allowed_origins, "supports_credentials": True}})
 
 # SECRET_KEY mới, đảm bảo dài và đủ mạnh (nên đặt trong biến môi trường trong production)
 app.config['SECRET_KEY'] = 'hNOg9JHiXCjUcqQzNtvYFKa7eksRLdwSGIfupW5M23T4vPDyZm'

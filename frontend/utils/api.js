@@ -3,8 +3,14 @@ import Cookies from 'js-cookie';
 
 // Hằng số
 const TOKEN_KEY = 'auth_token';
-// Sử dụng biến môi trường hoặc giá trị mặc định cho API URL
+
+// Kiểm tra môi trường và sử dụng API URL phù hợp
+// Khi chạy local development: NEXT_PUBLIC_API_URL=http://localhost:5000/api 
+// Khi sử dụng ngrok: NEXT_PUBLIC_API_URL=https://xxx-xxx-xxx-xxx.ngrok.io/api
+// Khi triển khai production: NEXT_PUBLIC_API_URL sẽ được đặt thông qua biến môi trường
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+
+console.log(`Using API URL: ${API_URL}`);
 
 /**
  * Lưu token vào cả localStorage và cookie
@@ -25,8 +31,7 @@ export const saveToken = (token) => {
         // Lưu vào cookie
         Cookies.set('token', token, { 
             expires: 30,  // 30 days
-            sameSite: 'none',
-            secure: true,
+            sameSite: 'lax',
             path: '/'
         });
         console.log('Token saved to cookies');
