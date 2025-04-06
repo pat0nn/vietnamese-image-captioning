@@ -4,7 +4,10 @@ import Cookies from 'js-cookie';
 // Hằng số
 const TOKEN_KEY = 'auth_token';
 // Sử dụng biến môi trường hoặc giá trị mặc định cho API URL
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+
+// Log API URL để debug
+console.log(`API URL: ${API_URL}`);
 
 /**
  * Lưu token vào cả localStorage và cookie
@@ -114,9 +117,16 @@ const api = axios.create({
     },
 });
 
+// Log để debug withCredentials
+console.log('Axios withCredentials:', api.defaults.withCredentials);
+
 // Thêm interceptor cho request để tự động thêm token vào header
 api.interceptors.request.use(
     (config) => {
+        // Log cho debugging
+        console.log(`Making ${config.method.toUpperCase()} request to: ${config.baseURL}${config.url}`);
+        console.log(`Request withCredentials: ${config.withCredentials}`);
+        
         const token = getToken();
         if (token) {
             console.log(`Adding token to request: ${token.substring(0, 15)}...`);

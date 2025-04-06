@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify, session, send_from_directory
-from flask_cors import CORS
+# Loại bỏ Flask-CORS, chúng ta sẽ tự xử lý CORS
+# from flask_cors import CORS
 import os
 from PIL import Image
 import io
@@ -14,23 +15,45 @@ from datetime import datetime, timedelta
 import jwt
 
 app = Flask(__name__, static_folder=None)  # Tắt thư mục static mặc định
-CORS_ORIGINS = [
-    'http://localhost:3000',
-    'https://phambatrong.com',
-    'https://www.phambatrong.com'
-]
-CORS(app, resources={r"/*": {"origins": CORS_ORIGINS, "supports_credentials": True}})
+app.url_map.strict_slashes = False  # Tắt strict slashes để /login và /login/ đều hoạt động
+
+# Không sử dụng Flask-CORS nữa
+# CORS(app, supports_credentials=True)
 
 # Custom middleware để thêm CORS header cho mọi response
 @app.after_request
 def add_cors_headers(response):
     origin = request.headers.get('Origin')
-    if origin in CORS_ORIGINS:
+    
+    # Nếu có Origin header, trả về chính xác origin đó
+    if origin:
         response.headers.add('Access-Control-Allow-Origin', origin)
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-        response.headers.add('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS')
         response.headers.add('Access-Control-Allow-Credentials', 'true')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
+        response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+    # Nếu không có Origin header, không thiết lập Access-Control-Allow-Credentials
+    else:
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With')
+        response.headers.add('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS')
+    
+    # In ra thông tin headers để debug
+    print(f"Request Origin: {origin}")
+    print(f"Response headers: {dict(response.headers)}")
+    
     return response
+
+# Xử lý riêng cho OPTIONS request
+@app.route('/', defaults={'path': ''}, methods=['OPTIONS'])
+@app.route('/<path:path>', methods=['OPTIONS'])
+def handle_options(path):
+    print(f"OPTIONS request for path: /{path}")
+    print(f"OPTIONS request headers: {request.headers}")
+    
+    response = jsonify({'status': 'ok'})
+    
+    # Headers sẽ được thêm tự động bởi add_cors_headers
+    return response, 200
 
 # SECRET_KEY mới, đảm bảo dài và đủ mạnh (nên đặt trong biến môi trường trong production)
 app.config['SECRET_KEY'] = 'hNOg9JHiXCjUcqQzNtvYFKa7eksRLdwSGIfupW5M23T4vPDyZm'
@@ -288,9 +311,76 @@ load_model()
 # Initialize database at startup
 init_db()
 
-# User registration endpoint
+# Route để handle cả /login và /api/login
+@app.route('/login', methods=['POST'])
+@app.route('/api/login', methods=['POST'])
+def login_handler():
+    print(f"Received login request at {request.path}")
+    
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+    
+    print(f"Login attempt for user: {username}")
+    
+    if not username or not password:
+        return jsonify({'error': 'Username and password are required'}), 400
+    
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # Find the user
+        cursor.execute("SELECT id, password FROM users WHERE username = %s", (username,))
+        user = cursor.fetchone()
+        cursor.close()
+        conn.close()
+        
+        if user is None:
+            return jsonify({'error': 'Invalid username or password'}), 401
+        
+        user_id, hashed_password = user
+        
+        # Check password
+        if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
+            # Generate token
+            token = generate_token(user_id, username)
+            
+            # Create response
+            response = jsonify({
+                'message': 'Login successful',
+                'user': {'id': user_id, 'username': username},
+                'token': token
+            })
+            
+            # Set cookie
+            print(f"Setting token cookie for user: {username}")
+            max_age = 30 * 24 * 60 * 60  # 30 days in seconds
+            expires = datetime.now() + timedelta(days=30)
+            response.set_cookie(
+                'token', 
+                token, 
+                max_age=max_age, 
+                expires=expires, 
+                httponly=False,  # Allow JavaScript access
+                secure=request.is_secure,
+                samesite='Lax',
+                path='/'
+            )
+            
+            return response, 200
+        else:
+            return jsonify({'error': 'Invalid username or password'}), 401
+    except Exception as e:
+        print(f"Login error: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+# Route để handle cả /register và /api/register
+@app.route('/register', methods=['POST'])
 @app.route('/api/register', methods=['POST'])
-def register():
+def register_handler():
+    print(f"Received register request at {request.path}")
+    
     data = request.json
     username = data.get('username')
     password = data.get('password')
@@ -354,67 +444,6 @@ def register():
         print(f"Registration error: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-# User login endpoint
-@app.route('/api/login', methods=['POST'])
-def login():
-    data = request.json
-    username = data.get('username')
-    password = data.get('password')
-    
-    print(f"Login attempt for user: {username}")
-    
-    if not username or not password:
-        return jsonify({'error': 'Username and password are required'}), 400
-    
-    try:
-        conn = get_db_connection()
-        cursor = conn.cursor()
-        
-        # Find the user
-        cursor.execute("SELECT id, password FROM users WHERE username = %s", (username,))
-        user = cursor.fetchone()
-        cursor.close()
-        conn.close()
-        
-        if user is None:
-            return jsonify({'error': 'Invalid username or password'}), 401
-        
-        user_id, hashed_password = user
-        
-        # Check password
-        if bcrypt.checkpw(password.encode('utf-8'), hashed_password.encode('utf-8')):
-            # Generate token
-            token = generate_token(user_id, username)
-            
-            # Create response
-            response = jsonify({
-                'message': 'Login successful',
-                'user': {'id': user_id, 'username': username},
-                'token': token
-            })
-            
-            # Set cookie
-            print(f"Setting token cookie for user: {username}")
-            max_age = 30 * 24 * 60 * 60  # 30 days in seconds
-            expires = datetime.now() + timedelta(days=30)
-            response.set_cookie(
-                'token', 
-                token, 
-                max_age=max_age, 
-                expires=expires, 
-                httponly=False,  # Allow JavaScript access
-                secure=request.is_secure,
-                samesite='Lax',
-                path='/'
-            )
-            
-            return response, 200
-        else:
-            return jsonify({'error': 'Invalid username or password'}), 401
-    except Exception as e:
-        print(f"Login error: {str(e)}")
-        return jsonify({'error': str(e)}), 500
-
 # User logout endpoint
 @app.route('/api/logout', methods=['POST'])
 def logout():
@@ -436,11 +465,16 @@ def logout():
 # Get current user endpoint
 @app.route('/api/user', methods=['GET'])
 def get_user():
+    print(f"Received user info request at {request.path}")
+    print(f"User info request headers: {request.headers}")
+    
     user_data = get_current_user(request)
     
     if not user_data:
+        print("No authenticated user found")
         return jsonify({'authenticated': False}), 401
     
+    print(f"Authenticated user: {user_data['username']}")
     return jsonify({
         'authenticated': True,
         'user_id': user_data['sub'],
@@ -451,21 +485,27 @@ def get_user():
         }
     })
 
+# Route để handle /user
+@app.route('/user', methods=['GET']) 
+def user_redirect():
+    print(f"Redirecting from /user to /api/user")
+    print(f"User redirect headers: {request.headers}")
+    
+    # Sử dụng cùng code như /api/user
+    return get_user()
+
 # API route for image captioning (no login required)
-@app.route('/api/caption', methods=['POST', 'OPTIONS'])
+@app.route('/api/caption', methods=['POST'])
 def caption_image():
-    # Xử lý trường hợp preflight request
-    if request.method == 'OPTIONS':
-        response = jsonify({'status': 'ok'})
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
-        response.headers.add('Access-Control-Allow-Methods', 'POST,OPTIONS')
-        return response
+    print(f"Received caption request at {request.path}")
+    print(f"Caption request headers: {request.headers}")
+    print(f"Caption request data: {request.files}")
         
-    if 'image' not in request.files:
+    if 'image' not in request.files and 'file' not in request.files:
+        print("No image found in request files")
         return jsonify({'error': 'No image uploaded'}), 400
     
-    file = request.files['image']
+    file = request.files.get('image') or request.files.get('file')
     
     # Read and convert image
     image_bytes = file.read()
@@ -505,13 +545,8 @@ def caption_image():
         return jsonify({'error': str(e)}), 500
 
 # API route to save user contributed data (login required)
-@app.route('/api/contribute', methods=['POST', 'OPTIONS'])
+@app.route('/api/contribute', methods=['POST'])
 def contribute_data():
-    # Xử lý trường hợp preflight request
-    if request.method == 'OPTIONS':
-        response = jsonify({'status': 'ok'})
-        return response
-        
     # Check if user is logged in
     user_data = get_current_user(request)
     if not user_data:
@@ -590,12 +625,8 @@ def contribute_data():
         return jsonify({'error': str(e)}), 500
 
 # API to get all contributed images (for admin)
-@app.route('/api/contributions', methods=['GET', 'OPTIONS'])
+@app.route('/api/contributions', methods=['GET'])
 def get_contributions():
-    if request.method == 'OPTIONS':
-        response = jsonify({'status': 'ok'})
-        return response
-        
     try:
         conn = get_db_connection()
         cursor = conn.cursor(cursor_factory=RealDictCursor)
@@ -621,12 +652,8 @@ def get_contributions():
         return jsonify({'error': str(e)}), 500
 
 # API to get user's contributions
-@app.route('/api/user/contributions', methods=['GET', 'OPTIONS'])
+@app.route('/api/user/contributions', methods=['GET'])
 def get_user_contributions():
-    if request.method == 'OPTIONS':
-        response = jsonify({'status': 'ok'})
-        return response
-        
     # Check if user is logged in
     user_data = get_current_user(request)
     if not user_data:
@@ -758,6 +785,50 @@ def delete_contribution(image_id):
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
+
+# Route để handle /user/contributions
+@app.route('/user/contributions', methods=['GET']) 
+def user_contributions_redirect():
+    print(f"Redirecting from /user/contributions to /api/user/contributions")
+    print(f"User contributions redirect headers: {request.headers}")
+    
+    # Sử dụng cùng code như /api/user/contributions
+    return get_user_contributions()
+
+# Route để handle /contribution/:id
+@app.route('/contribution/<image_id>', methods=['PUT', 'DELETE']) 
+def contribution_redirect(image_id):
+    print(f"Redirecting from /contribution/{image_id} to /api/contribution/{image_id}")
+    print(f"Contribution redirect headers: {request.headers}")
+    
+    if request.method == 'PUT':
+        return update_contribution(image_id)
+    elif request.method == 'DELETE':
+        return delete_contribution(image_id)
+
+# Route để handle /contribute
+@app.route('/contribute', methods=['POST']) 
+def contribute_redirect():
+    print(f"Redirecting from /contribute to /api/contribute")
+    print(f"Contribute redirect headers: {request.headers}")
+    
+    return contribute_data()
+
+# Route để handle /caption
+@app.route('/caption', methods=['POST']) 
+def caption_redirect():
+    print(f"Redirecting from /caption to /api/caption")
+    print(f"Caption redirect headers: {request.headers}")
+    
+    return caption_image()
+
+# Route để handle /contributions 
+@app.route('/contributions', methods=['GET'])
+def contributions_redirect():
+    print(f"Redirecting from /contributions to /api/contributions")
+    print(f"Contributions redirect headers: {request.headers}")
+    
+    return get_contributions()
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5000) 
