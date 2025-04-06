@@ -5,15 +5,6 @@
   },
   "routes": [
     {
-      "route": "/api/*",
-      "allowedRoles": ["anonymous", "authenticated"],
-      "headers": {
-        "Access-Control-Allow-Origin": "*",
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With"
-      }
-    },
-    {
       "route": "/*",
       "serve": "/index.html",
       "statusCode": 200
@@ -26,18 +17,11 @@
     }
   },
   "globalHeaders": {
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-    "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With"
+    "Content-Security-Policy": "frame-ancestors 'self'; default-src 'self' 'unsafe-inline' 'unsafe-eval' https://7e6a-116-96-47-45.ngrok-free.app https://*.ngrok-free.app https://*.azurestaticapps.net data:; img-src 'self' https://*.ngrok-free.app https://*.azurestaticapps.net data: blob:;",
+    "X-Content-Type-Options": "nosniff",
+    "X-Frame-Options": "SAMEORIGIN"
   },
   "mimeTypes": {
     ".json": "application/json"
-  },
-  "cors": {
-    "allowedOrigins": ["*"],
-    "allowedMethods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    "allowedHeaders": ["Content-Type", "Authorization", "X-Requested-With"],
-    "exposedHeaders": ["Access-Control-Allow-Origin"],
-    "maxAge": 86400
   }
 } 

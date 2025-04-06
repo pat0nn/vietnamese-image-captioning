@@ -9,6 +9,7 @@ tunnels:
     host_header: "localhost:5000"
     schemes: ['https']
     response_headers:
-      Access-Control-Allow-Origin: "*"
+      Access-Control-Allow-Origin: "https://ashy-ocean-0e5aab200.6.azurestaticapps.net"
       Access-Control-Allow-Methods: "GET, POST, PUT, DELETE, OPTIONS"
-      Access-Control-Allow-Headers: "Content-Type, Authorization" 
+      Access-Control-Allow-Headers: "Content-Type, Authorization"
+      Access-Control-Allow-Credentials: "true" 

@@ -15,19 +15,27 @@ import jwt
 
 app = Flask(__name__, static_folder=None)  # Tắt thư mục static mặc định
 
-# Cấu hình CORS - cho phép tất cả các domain
+# Cấu hình CORS - chỉ định domain cụ thể thay vì *
 CORS(app, 
-     origins=["http://localhost:3000", "https://ashy-ocean-0e5aab200.6.azurestaticapps.net", 
-              "https://*.azurestaticapps.net", "https://*.ngrok-free.app", "https://*.ngrok.io"], 
+     origins=["http://localhost:3000", "https://ashy-ocean-0e5aab200.6.azurestaticapps.net"], 
      supports_credentials=True,
-     allow_headers=["Content-Type", "Authorization", "Access-Control-Allow-Origin"], 
+     allow_headers=["Content-Type", "Authorization"], 
      methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-     expose_headers=["Access-Control-Allow-Origin"])
+     expose_headers=["Content-Type", "Authorization"])
 
-# Thêm route OPTIONS cho tất cả các endpoint
+# Thêm route OPTIONS cho tất cả các endpoint với domain cụ thể
 @app.after_request
 def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
+    origin = request.headers.get('Origin')
+    
+    # Nếu request đến từ domain được cho phép
+    if origin in ["http://localhost:3000", "https://ashy-ocean-0e5aab200.6.azurestaticapps.net"]:
+        response.headers.add('Access-Control-Allow-Origin', origin)
+    else:
+        # Hoặc bạn có thể chỉ định domain mặc định nếu không nhận diện được origin
+        response.headers.add('Access-Control-Allow-Origin', 'https://ashy-ocean-0e5aab200.6.azurestaticapps.net')
+        
+    response.headers.add('Access-Control-Allow-Credentials', 'true')
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
     response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
     return response

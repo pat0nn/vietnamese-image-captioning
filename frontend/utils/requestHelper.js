@@ -107,7 +107,6 @@ const api = axios.create({
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
   }
 });
 
@@ -121,8 +120,7 @@ api.interceptors.request.use(
     } else {
       console.log('No token available for request');
     }
-    // Thêm CORS headers cho mọi request
-    config.headers['Access-Control-Allow-Origin'] = '*';
+    // Không thêm CORS headers bên phía client
     return config;
   },
   (error) => {
@@ -248,58 +246,34 @@ export const getCurrentUser = async () => {
 // Image related methods
 export const getImageCaption = async (formData) => {
   console.log('Getting image caption');
-  const token = getToken();
-  const headers = {
-    'Content-Type': 'multipart/form-data',
-  };
-  
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-    console.log('Adding token to caption request');
-  }
-  
   try {
-    const response = await axios.post(`${API_URL}/caption`, formData, {
-      withCredentials: true,
-      headers
+    // Sử dụng API instance thay vì axios.post
+    const response = await api.post('/caption', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      }
     });
     console.log('Caption API response:', response.status);
     return response.data;
   } catch (error) {
-    console.error('Get caption error:', error.response?.data || error.message);
+    console.error('Get caption error:', error);
     throw error;
   }
 };
 
 export const contributeImage = async (formData) => {
   console.log('Contributing image');
-  const token = getToken();
-  const headers = {
-    'Content-Type': 'multipart/form-data',
-  };
-  
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-    console.log('Adding token to contribution request');
-  } else {
-    console.log('No token available for contribution request');
-  }
-  
   try {
-    // Log formData để debug
-    console.log('FormData contents:');
-    for (let pair of formData.entries()) {
-      console.log(pair[0] + ': ' + pair[1]);
-    }
-    
-    const response = await axios.post(`${API_URL}/contribute`, formData, {
-      withCredentials: true,
-      headers
+    // Sử dụng API instance thay vì axios.post
+    const response = await api.post('/contribute', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      }
     });
     console.log('Contribute API response:', response.status);
     return response.data;
   } catch (error) {
-    console.error('Contribute error:', error.response?.data || error.message);
+    console.error('Contribute error:', error);
     
     if (error.response && error.response.status === 401) {
       console.log('Unauthorized contribution attempt, clearing token');
