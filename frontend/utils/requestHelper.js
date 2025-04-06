@@ -30,20 +30,11 @@ export const saveToken = (token) => {
 
 // Get token from localStorage
 export const getToken = () => {
-  let token = null;
-  
-  // Try localStorage
-  try {
-    token = localStorage.getItem(TOKEN_KEY);
-    if (token) {
-      console.log(`Token found in localStorage: ${token.substring(0, 15)}...`);
-      return token;
-    }
-  } catch (e) {
-    console.warn('Error reading from localStorage:', e);
+  if (typeof window !== 'undefined') {
+    const token = localStorage.getItem(TOKEN_KEY);
+    console.log('Token found in localStorage:', token ? `${token.substring(0, 15)}...` : 'null');
+    return token;
   }
-  
-  console.log('No token found in storage');
   return null;
 };
 
@@ -63,6 +54,74 @@ export const clearToken = () => {
     console.warn(`WARNING: Token still exists after clearing: ${remainingToken.substring(0, 15)}...`);
   } else {
     console.log('Token successfully cleared from storage');
+  }
+};
+
+// Track ngrok URL confirmation
+export const isNgrokConfirmed = (url) => {
+  if (typeof window !== 'undefined') {
+    const confirmedUrls = localStorage.getItem('confirmed_ngrok_urls');
+    if (confirmedUrls) {
+      try {
+        const urlsArray = JSON.parse(confirmedUrls);
+        return urlsArray.includes(url);
+      } catch (e) {
+        return false;
+      }
+    }
+  }
+  return false;
+};
+
+export const markNgrokAsConfirmed = (url) => {
+  if (typeof window !== 'undefined') {
+    let confirmedUrls = [];
+    const existingUrls = localStorage.getItem('confirmed_ngrok_urls');
+    
+    if (existingUrls) {
+      try {
+        confirmedUrls = JSON.parse(existingUrls);
+      } catch (e) {
+        confirmedUrls = [];
+      }
+    }
+    
+    if (!confirmedUrls.includes(url)) {
+      confirmedUrls.push(url);
+      localStorage.setItem('confirmed_ngrok_urls', JSON.stringify(confirmedUrls));
+    }
+  }
+};
+
+// Function to verify and confirm ngrok URL
+export const verifyNgrokUrl = async () => {
+  if (!API_URL.includes('ngrok')) {
+    return true; // Không phải ngrok URL, không cần xác nhận
+  }
+  
+  if (isNgrokConfirmed(API_URL)) {
+    console.log('Ngrok URL đã được xác nhận trước đó:', API_URL);
+    return true;
+  }
+  
+  try {
+    console.log('Đang xác nhận Ngrok URL:', API_URL);
+    // Tạo một tab mới để xác nhận URL
+    if (typeof window !== 'undefined') {
+      const testUrl = `${API_URL}/ngrok-ready?_ngrok_skip_browser_warning=true`;
+      const newWindow = window.open(testUrl, '_blank');
+      
+      // Đánh dấu URL đã được mở để xác nhận
+      console.log('Đã mở tab mới để xác nhận URL');
+      
+      // Thông báo cho người dùng
+      alert('Vui lòng xác nhận URL ngrok trong tab mới vừa mở.\nNhấn "Visit Site" trên trang ngrok.');
+      
+      return false;
+    }
+  } catch (e) {
+    console.error('Lỗi khi xác nhận ngrok URL:', e);
+    return false;
   }
 };
 
@@ -88,10 +147,12 @@ api.interceptors.request.use(
     // Thêm param ngrok skip browser warning cho tất cả request
     // Kiểm tra xem URL hiện tại có chứa ngrok không
     if (API_URL.includes('ngrok')) {
-      // Thêm query param để ngrok không hiển thị trang cảnh báo
-      const separator = config.url.includes('?') ? '&' : '?';
-      config.url = `${config.url}${separator}_ngrok_skip_browser_warning=true`;
-      console.log(`Modified URL with ngrok param: ${config.url}`);
+      // Chỉ thêm tham số nếu chưa tồn tại trong URL
+      if (!config.url.includes('_ngrok_skip_browser_warning=true')) {
+        const separator = config.url.includes('?') ? '&' : '?';
+        config.url = `${config.url}${separator}_ngrok_skip_browser_warning=true`;
+        console.log(`Modified URL with ngrok param: ${config.url}`);
+      }
     }
     
     return config;
@@ -114,18 +175,25 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
-    console.error('API error:', error);
-    
-    // If 401 Unauthorized error, clear token and notify
-    if (error.response && error.response.status === 401) {
-      console.warn('401 Unauthorized error - clearing authentication');
-      clearToken();
-      // You might dispatch an event or action to update UI
-      window.dispatchEvent(new CustomEvent('auth-error', { 
-        detail: { message: 'Your session has expired. Please log in again.' } 
-      }));
+    console.error('API error:', error.message);
+    if (error.response) {
+      console.error('Error status:', error.response.status);
+      console.error('Error data:', error.response.data);
+      
+      // Check if we received an HTML response (likely ngrok warning)
+      const contentType = error.response.headers['content-type'] || '';
+      if (contentType.includes('text/html') && API_URL.includes('ngrok')) {
+        console.error('Received HTML instead of JSON. This may be the ngrok warning page.');
+        // Try to verify the ngrok URL
+        verifyNgrokUrl();
+      }
+      
+      // Handle 401 Unauthorized
+      if (error.response.status === 401) {
+        console.log('Unauthorized, clearing token');
+        clearToken();
+      }
     }
-    
     return Promise.reject(error);
   }
 );
@@ -221,6 +289,15 @@ export const getImageCaption = async (formData) => {
   console.log('Getting image caption');
   console.log(`API URL được sử dụng: ${API_URL}`);
   
+  // Kiểm tra và xác nhận ngrok URL nếu cần
+  if (API_URL.includes('ngrok') && !isNgrokConfirmed(API_URL)) {
+    console.log('Ngrok URL chưa được xác nhận, đang tự động xác nhận...');
+    await verifyNgrokUrl();
+    
+    // Tạm dừng để cho người dùng thời gian xác nhận
+    await new Promise(resolve => setTimeout(resolve, 2000));
+  }
+  
   const token = getToken();
   const headers = {
     'Content-Type': 'multipart/form-data',
@@ -250,18 +327,48 @@ export const getImageCaption = async (formData) => {
       withCredentials: false, // Không sử dụng cookies
       headers
     });
+    
+    // Nếu thành công, đánh dấu URL là đã xác nhận
+    if (API_URL.includes('ngrok')) {
+      markNgrokAsConfirmed(API_URL);
+    }
+    
     console.log('Caption API response:', response.status);
     return response.data;
   } catch (error) {
     console.error('Get caption error:', error.message || error);
     console.error('Error details:', error.response?.data || 'No response data');
     console.error('Error getting caption with URL:', `${API_URL}/caption`);
+    
+    // Kiểm tra nếu response là HTML
+    if (error.response && error.response.headers) {
+      const contentType = error.response.headers['content-type'] || '';
+      if (contentType.includes('text/html') && API_URL.includes('ngrok')) {
+        console.error('Received HTML instead of JSON from error. This may be the ngrok warning page.');
+        
+        // Mở tab để xác nhận URL
+        if (!isNgrokConfirmed(API_URL)) {
+          await verifyNgrokUrl();
+        }
+      }
+    }
+    
     throw error;
   }
 };
 
 export const contributeImage = async (formData) => {
   console.log('Contributing image');
+  
+  // Kiểm tra và xác nhận ngrok URL nếu cần
+  if (API_URL.includes('ngrok') && !isNgrokConfirmed(API_URL)) {
+    console.log('Ngrok URL chưa được xác nhận, đang tự động xác nhận...');
+    await verifyNgrokUrl();
+    
+    // Tạm dừng để cho người dùng thời gian xác nhận
+    await new Promise(resolve => setTimeout(resolve, 2000));
+  }
+  
   const token = getToken();
   const headers = {
     'Content-Type': 'multipart/form-data',
@@ -293,10 +400,29 @@ export const contributeImage = async (formData) => {
       withCredentials: false, // Không sử dụng cookies
       headers
     });
+    
+    // Nếu thành công, đánh dấu URL là đã xác nhận
+    if (API_URL.includes('ngrok')) {
+      markNgrokAsConfirmed(API_URL);
+    }
+    
     console.log('Contribute API response:', response.status);
     return response.data;
   } catch (error) {
     console.error('Contribute error:', error.response?.data || error.message);
+    
+    // Kiểm tra nếu response là HTML
+    if (error.response && error.response.headers) {
+      const contentType = error.response.headers['content-type'] || '';
+      if (contentType.includes('text/html') && API_URL.includes('ngrok')) {
+        console.error('Received HTML instead of JSON from error. This may be the ngrok warning page.');
+        
+        // Mở tab để xác nhận URL
+        if (!isNgrokConfirmed(API_URL)) {
+          await verifyNgrokUrl();
+        }
+      }
+    }
     
     if (error.response && error.response.status === 401) {
       console.log('Unauthorized contribution attempt, clearing token');
@@ -319,6 +445,16 @@ export const getUserContributions = async () => {
   console.log(`Using token: ${token.substring(0, 15)}...`);
   console.log(`API URL: ${API_URL}`);
   
+  // Kiểm tra và xác nhận ngrok URL nếu cần
+  if (API_URL.includes('ngrok') && !isNgrokConfirmed(API_URL)) {
+    console.log('Ngrok URL chưa được xác nhận, đang tự động xác nhận...');
+    // Xác nhận URL trước
+    await verifyNgrokUrl();
+    
+    // Tạm dừng để cho người dùng thời gian xác nhận
+    await new Promise(resolve => setTimeout(resolve, 2000));
+  }
+  
   try {
     console.log('Sending request to get user contributions...');
     
@@ -336,17 +472,41 @@ export const getUserContributions = async () => {
       console.error('Received HTML response instead of JSON. This might be the ngrok warning page.');
       console.log('Please visit the ngrok URL directly in your browser first to approve it.');
       
+      // Mở tab để xác nhận URL nếu chưa xác nhận
+      if (!isNgrokConfirmed(API_URL)) {
+        await verifyNgrokUrl();
+      }
+      
       // Trả về mảng rỗng nếu nhận được HTML
       return { contributions: [] };
     }
     
     console.log('User contributions response status:', response.status);
     console.log('User contributions data:', response.data);
+    
+    // Nếu nhận được JSON hợp lệ, đánh dấu URL đã được xác nhận
+    if (API_URL.includes('ngrok')) {
+      markNgrokAsConfirmed(API_URL);
+    }
+    
     return response.data;
   } catch (error) {
     console.error('Get contributions error:', error);
     console.error('Error details:', error.response?.data || 'No response data');
     console.error('Error status:', error.response?.status);
+    
+    // Kiểm tra nếu response là HTML
+    if (error.response && error.response.headers) {
+      const contentType = error.response.headers['content-type'] || '';
+      if (contentType.includes('text/html') && API_URL.includes('ngrok')) {
+        console.error('Received HTML instead of JSON from error. This may be the ngrok warning page.');
+        
+        // Mở tab để xác nhận URL
+        if (!isNgrokConfirmed(API_URL)) {
+          await verifyNgrokUrl();
+        }
+      }
+    }
     
     if (error.response && error.response.status === 401) {
       console.log('Unauthorized when getting contributions, clearing token');
