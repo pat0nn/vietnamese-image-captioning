@@ -107,6 +107,7 @@ const api = axios.create({
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
   }
 });
 
@@ -120,6 +121,8 @@ api.interceptors.request.use(
     } else {
       console.log('No token available for request');
     }
+    // Thêm CORS headers cho mọi request
+    config.headers['Access-Control-Allow-Origin'] = '*';
     return config;
   },
   (error) => {

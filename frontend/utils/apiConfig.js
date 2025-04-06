@@ -25,7 +25,19 @@ const API_URL = process.env.NODE_ENV === 'production'
 export const apiConfig = {
   baseURL: API_URL,
   imageBaseURL: NGROK_URL,
-  isDevelopment: process.env.NODE_ENV !== 'production'
+  isDevelopment: process.env.NODE_ENV !== 'production',
+  headers: {
+    common: {
+      'Access-Control-Allow-Origin': '*',
+    }
+  }
 };
+
+// Hiển thị thông tin cấu hình trong console (để debug)
+console.log('API Configuration:', {
+  baseURL: apiConfig.baseURL,
+  imageBaseURL: apiConfig.imageBaseURL,
+  environment: process.env.NODE_ENV || 'development'
+});
 
 export default apiConfig; 

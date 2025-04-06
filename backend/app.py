@@ -15,13 +15,22 @@ import jwt
 
 app = Flask(__name__, static_folder=None)  # Tắt thư mục static mặc định
 
-# Cấu hình CORS để cho phép truy cập từ Azure Static Web Apps và các môi trường phát triển
-CORS(app, resources={r"/*": {
-    "origins": ["http://localhost:3000", "https://*.azurestaticapps.net", "https://*.ngrok-free.app", "https://*.ngrok.io"],
-    "supports_credentials": True, 
-    "allow_headers": ["Content-Type", "Authorization"], 
-    "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
-}})
+# Cấu hình CORS - cho phép tất cả các domain
+CORS(app, 
+     origins=["http://localhost:3000", "https://ashy-ocean-0e5aab200.6.azurestaticapps.net", 
+              "https://*.azurestaticapps.net", "https://*.ngrok-free.app", "https://*.ngrok.io"], 
+     supports_credentials=True,
+     allow_headers=["Content-Type", "Authorization", "Access-Control-Allow-Origin"], 
+     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+     expose_headers=["Access-Control-Allow-Origin"])
+
+# Thêm route OPTIONS cho tất cả các endpoint
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
 
 # SECRET_KEY mới, đảm bảo dài và đủ mạnh (nên đặt trong biến môi trường trong production)
 app.config['SECRET_KEY'] = 'hNOg9JHiXCjUcqQzNtvYFKa7eksRLdwSGIfupW5M23T4vPDyZm'
