@@ -16,7 +16,7 @@
     }
   },
   "globalHeaders": {
-    "content-security-policy": "default-src 'self' 'unsafe-inline' 'unsafe-eval' *.ngrok-free.app; img-src 'self' blob: data:; connect-src 'self' *.ngrok-free.app; frame-ancestors 'none'",
+    "content-security-policy": "default-src 'self' 'unsafe-inline' 'unsafe-eval' http://* https://*; img-src 'self' blob: data: http://* https://*; connect-src 'self' http://* https://* localhost:* *.ngrok-free.app *.ngrok.io; frame-ancestors 'none'",
     "Access-Control-Allow-Origin": "*",
     "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
     "Access-Control-Allow-Headers": "Content-Type, Authorization"

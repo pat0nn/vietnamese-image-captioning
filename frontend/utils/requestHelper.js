@@ -244,6 +244,8 @@ export const getCurrentUser = async () => {
 // Image related methods
 export const getImageCaption = async (formData) => {
   console.log('Getting image caption');
+  console.log(`API URL được sử dụng: ${API_URL}`);
+  
   const token = getToken();
   const headers = {
     'Content-Type': 'multipart/form-data',
@@ -254,7 +256,14 @@ export const getImageCaption = async (formData) => {
     console.log('Adding token to caption request');
   }
   
+  // Log FormData để debug
+  console.log('FormData contents:');
+  for (let pair of formData.entries()) {
+    console.log(`${pair[0]}: ${pair[1] instanceof File ? pair[1].name : pair[1]}`);
+  }
+  
   try {
+    console.log(`Gửi request đến: ${API_URL}/caption`);
     const response = await axios.post(`${API_URL}/caption`, formData, {
       withCredentials: true,
       headers
@@ -262,7 +271,9 @@ export const getImageCaption = async (formData) => {
     console.log('Caption API response:', response.status);
     return response.data;
   } catch (error) {
-    console.error('Get caption error:', error.response?.data || error.message);
+    console.error('Get caption error:', error.message || error);
+    console.error('Error details:', error.response?.data || 'No response data');
+    console.error('Error getting caption with URL:', `${API_URL}/caption`);
     throw error;
   }
 };
