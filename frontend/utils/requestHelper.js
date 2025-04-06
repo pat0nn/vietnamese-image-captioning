@@ -5,6 +5,7 @@ import apiConfig from './apiConfig';
 
 const TOKEN_KEY = 'auth_token';
 const API_URL = apiConfig.baseURL;
+const IMAGE_URL = apiConfig.imageBaseURL;
 
 // Save token to localStorage and Cookies for redundancy
 export const saveToken = (token) => {
@@ -102,11 +103,15 @@ export const clearToken = () => {
   }
 };
 
+// Tạo mới một instance của axios cho API calls
 const api = axios.create({
   baseURL: API_URL,
+  // withCredentials: false khi sử dụng proxy trên cùng domain 
+  // tránh lỗi CORS
   withCredentials: false,
   headers: {
     'Content-Type': 'application/json',
+    ...apiConfig.headers
   }
 });
 
@@ -120,7 +125,6 @@ api.interceptors.request.use(
     } else {
       console.log('No token available for request');
     }
-    // Không thêm CORS headers bên phía client
     return config;
   },
   (error) => {
@@ -129,27 +133,36 @@ api.interceptors.request.use(
   }
 );
 
-// Handle response and detect auth errors
+// Xử lý các lỗi từ phía server
 api.interceptors.response.use(
   (response) => {
-    // If response contains new token, update
+    // Nếu response chứa token mới, lưu token
     if (response.data && response.data.token) {
       console.log('New token received in response, updating');
       saveToken(response.data.token);
     }
-    
     return response;
   },
   (error) => {
     console.error('API error:', error);
     
-    // If 401 Unauthorized error, clear token and notify
+    // Kiểm tra lỗi mạng
+    if (!error.response) {
+      console.error('Network error - no response from server');
+      return Promise.reject({
+        message: 'Không thể kết nối đến máy chủ. Vui lòng kiểm tra kết nối mạng.',
+        originalError: error
+      });
+    }
+    
+    // Xử lý lỗi xác thực
     if (error.response && error.response.status === 401) {
-      console.warn('401 Unauthorized error - clearing authentication');
+      console.warn('401 Unauthorized error - clearing token');
       clearToken();
-      // You might dispatch an event or action to update UI
+      
+      // Dispatch event để thông báo cho người dùng
       window.dispatchEvent(new CustomEvent('auth-error', { 
-        detail: { message: 'Your session has expired. Please log in again.' } 
+        detail: { message: 'Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.' } 
       }));
     }
     
@@ -180,22 +193,13 @@ export const register = async (username, password) => {
 };
 
 export const login = async (username, password) => {
-  console.log('Logging in user:', username);
   try {
+    console.log(`Đang đăng nhập với tài khoản: ${username}`);
     const response = await api.post('/login', { username, password });
-    console.log('Login API response:', response.status);
-    
-    // Save token
-    if (response.data && response.data.token) {
-      console.log('Login successful, saving token');
-      saveToken(response.data.token);
-    } else {
-      console.error('Login response missing token');
-    }
-    
+    console.log('Đăng nhập thành công');
     return response.data;
   } catch (error) {
-    console.error('Login failed:', error.response?.data || error.message);
+    console.error('Lỗi đăng nhập:', error);
     throw error;
   }
 };
@@ -285,14 +289,27 @@ export const contributeImage = async (formData) => {
 };
 
 export const getUserContributions = async () => {
-  console.log('Getting user contributions');
   try {
+    console.log('Getting user contributions');
     const response = await api.get('/user/contributions');
-    console.log('User contributions response:', response.status);
-    return response.data;
+    console.log('Get user contributions response status:', response.status);
+    
+    // Kiểm tra response có phải JSON hay không
+    if (response.data && response.data.contributions) {
+      // Cập nhật đường dẫn ảnh để sử dụng proxy
+      if (response.data.contributions.length > 0) {
+        console.log(`Found ${response.data.contributions.length} contributions`);
+      } else {
+        console.log('No contributions found');
+      }
+      return response.data;
+    } else {
+      console.warn('Invalid response format', response);
+      return { contributions: [] };
+    }
   } catch (error) {
-    console.error('Get contributions error:', error.response?.data || error.message);
-    throw error;
+    console.error('Get contributions error:', error);
+    return { contributions: [] }; // Trả về mảng rỗng để tránh lỗi UI
   }
 };
 

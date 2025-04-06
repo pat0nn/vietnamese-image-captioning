@@ -2,6 +2,12 @@
 
 Backend API cho dự án Vietnamese Image Captioning sử dụng Flask.
 
+## Kiến trúc triển khai
+
+- **Backend**: Chạy ở local, truy cập qua ngrok tunnel
+- **Frontend**: Triển khai trên Azure Static Web Apps
+- **Kết nối**: Frontend truy cập backend thông qua proxy của Azure Static Web Apps
+
 ## Cài đặt
 
 1. Cài đặt các package cần thiết:
@@ -45,21 +51,31 @@ ngrok start --config ngrok.yml backend
 ngrok http 5000
 ```
 
-3. Sau khi chạy ngrok, bạn sẽ nhận được URL tunnel (ví dụ: https://41bb-116-96-47-45.ngrok-free.app)
+3. Sau khi chạy ngrok, bạn sẽ nhận được URL tunnel (ví dụ: https://7e6a-116-96-47-45.ngrok-free.app)
 
-## Cập nhật URL trong Frontend
+## Cập nhật cấu hình proxy trong Frontend
 
-Khi URL ngrok thay đổi (sau mỗi 2 giờ hoặc khi bạn khởi động lại ngrok), bạn cần:
+Khi URL ngrok thay đổi (sau mỗi 2 giờ hoặc khi bạn khởi động lại ngrok), bạn cần cập nhật:
 
-1. Mở file `frontend/utils/apiConfig.js`
-2. Cập nhật giá trị `NGROK_URL` với URL tunnel mới
+1. Mở file `frontend/staticwebapp.config.json`
+2. Cập nhật URL ngrok trong phần routes:
+
+```json
+{
+  "routes": [
+    {
+      "route": "/api/*",
+      "rewrite": "https://NEW-NGROK-URL.ngrok-free.app/api/:splat"
+    },
+    {
+      "route": "/uploads/*",
+      "rewrite": "https://NEW-NGROK-URL.ngrok-free.app/uploads/:splat"
+    }
+  ]
+}
+```
+
 3. Build và deploy lại frontend
-
-## Lưu ý
-
-- Phiên bản miễn phí của ngrok tự động thay đổi URL sau mỗi 2 giờ
-- Để duy trì một URL cố định, hãy nâng cấp lên phiên bản trả phí của ngrok
-- Đảm bảo cập nhật CORS trong `app.py` nếu bạn triển khai frontend trên các domain khác
 
 ## Cấu hình Database
 
@@ -84,4 +100,12 @@ DB_PASSWORD = 'postgres'
 - `/api/contribute` - Đóng góp ảnh và caption
 - `/api/contributions` - Lấy danh sách các đóng góp
 - `/api/user/contributions` - Lấy danh sách đóng góp của người dùng hiện tại
-- `/api/contribution/<image_id>` - Cập nhật hoặc xóa đóng góp 
+- `/api/contribution/<image_id>` - Cập nhật hoặc xóa đóng góp
+
+## Lưu ý về CORS
+
+Backend được cấu hình để chấp nhận request từ:
+- http://localhost:3000 (Môi trường phát triển)
+- https://ashy-ocean-0e5aab200.6.azurestaticapps.net (Frontend được triển khai)
+
+Frontend sử dụng proxy từ Azure Static Web Apps để chuyển tiếp request đến backend, giúp tránh các vấn đề CORS. 

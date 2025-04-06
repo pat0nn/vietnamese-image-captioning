@@ -5,6 +5,16 @@
   },
   "routes": [
     {
+      "route": "/api/*",
+      "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      "rewrite": "https://7e6a-116-96-47-45.ngrok-free.app/api/:splat"
+    },
+    {
+      "route": "/uploads/*",
+      "methods": ["GET"],
+      "rewrite": "https://7e6a-116-96-47-45.ngrok-free.app/uploads/:splat"
+    },
+    {
       "route": "/*",
       "serve": "/index.html",
       "statusCode": 200
@@ -17,11 +27,14 @@
     }
   },
   "globalHeaders": {
-    "Content-Security-Policy": "frame-ancestors 'self'; default-src 'self' 'unsafe-inline' 'unsafe-eval' https://7e6a-116-96-47-45.ngrok-free.app https://*.ngrok-free.app https://*.azurestaticapps.net data:; img-src 'self' https://*.ngrok-free.app https://*.azurestaticapps.net data: blob:;",
+    "Content-Security-Policy": "frame-ancestors 'self'; default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob:; connect-src 'self' https://*.ngrok-free.app; img-src 'self' data: blob: https://*.ngrok-free.app;",
     "X-Content-Type-Options": "nosniff",
     "X-Frame-Options": "SAMEORIGIN"
   },
   "mimeTypes": {
     ".json": "application/json"
+  },
+  "platform": {
+    "apiRuntime": "node:18"
   }
 } 

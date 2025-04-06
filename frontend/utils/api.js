@@ -113,6 +113,7 @@ const api = axios.create({
     withCredentials: false, // Tắt tính năng withCredentials để tránh vấn đề CORS
     headers: {
         'Content-Type': 'application/json',
+        ...apiConfig.headers
     },
 });
 

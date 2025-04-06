@@ -1,11 +1,12 @@
 # Vietnamese Image Captioning - Frontend
 
-Ứng dụng frontend cho dự án Vietnamese Image Captioning. Sử dụng Next.js và được triển khai trên Azure Static Web Apps kết nối với backend qua ngrok tunnel.
+Ứng dụng frontend cho dự án Vietnamese Image Captioning. Sử dụng Next.js và được triển khai trên Azure Static Web Apps kết nối với backend qua proxy.
 
 ## Cấu trúc Triển khai
 
 - **Frontend**: Được triển khai trên Azure Static Web Apps
 - **Backend**: Chạy ở local, kết nối thông qua ngrok tunnel
+- **API Proxy**: Azure Static Web Apps cung cấp tính năng proxy để chuyển tiếp yêu cầu API, tránh vấn đề CORS
 
 ## Yêu cầu
 
@@ -40,16 +41,42 @@ npm install -g ngrok
 
 ## Cập nhật URL Ngrok
 
-Khi ngrok tunnel thay đổi (sau mỗi 2 giờ), bạn cần cập nhật URL trong file cấu hình:
+Khi ngrok tunnel thay đổi (sau mỗi 2 giờ), bạn cần cập nhật URL trong cấu hình proxy:
 
-1. Mở file `utils/apiConfig.js`
-2. Cập nhật giá trị `NGROK_URL` với URL tunnel mới
-3. Lưu file và build lại ứng dụng
+1. Mở file `staticwebapp.config.json`
+2. Cập nhật URL ngrok trong phần routes:
 
-```javascript
-// Ví dụ - cập nhật dòng này:
-const NGROK_URL = 'https://new-tunnel-url.ngrok-free.app';
+```json
+{
+  "routes": [
+    {
+      "route": "/api/*",
+      "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      "rewrite": "https://NEW-NGROK-URL.ngrok-free.app/api/:splat"
+    },
+    {
+      "route": "/uploads/*",
+      "methods": ["GET"],
+      "rewrite": "https://NEW-NGROK-URL.ngrok-free.app/uploads/:splat"
+    }
+  ]
+}
 ```
+
+3. Build và deploy lại ứng dụng
+
+## Cách thức hoạt động của proxy
+
+Azure Static Web Apps cung cấp tính năng proxy cho phép:
+
+1. Frontend gửi request đến `/api/*` (cùng domain)
+2. Azure sẽ chuyển tiếp request đến backend ngrok theo cấu hình `rewrite`
+3. Tương tự, request cho hình ảnh qua đường dẫn `/uploads/*` cũng được chuyển tiếp
+
+Ưu điểm của cách tiếp cận này:
+- **Không có vấn đề CORS**: Vì browser coi mọi request là đến cùng origin (same-origin)
+- **Tính bảo mật cao**: Headers được bảo toàn qua proxy
+- **Không cần cấu hình phức tạp**: Không cần thay đổi cấu hình CORS ở backend
 
 ## Chạy Backend với Ngrok
 
@@ -63,23 +90,18 @@ python app.py
 2. Mở terminal mới và tạo ngrok tunnel đến backend:
 
 ```bash
+# Sử dụng file cấu hình
+ngrok start --config ngrok.yml backend
+
+# Hoặc lệnh trực tiếp
 ngrok http 5000
 ```
 
-3. Sao chép URL https từ ngrok và cập nhật trong `utils/apiConfig.js`
+3. Sao chép URL https từ ngrok và cập nhật trong `staticwebapp.config.json`
 
 ## Deploy lên Azure Static Web Apps
 
-### Cách 1: Sử dụng GitHub Actions
-
-1. Commit và push code lên GitHub repository
-2. Tạo Azure Static Web App từ Azure Portal và kết nối với GitHub repo
-3. Azure sẽ tự động deploy khi có commit mới
-
-### Cách 2: Deploy thủ công bằng CLI
-
-1. Cập nhật URL ngrok trong `utils/apiConfig.js`
-2. Build và export ứng dụng:
+1. Build và export ứng dụng:
 
 ```bash
 yarn build-static
@@ -87,7 +109,7 @@ yarn build-static
 npm run build-static
 ```
 
-3. Deploy lên Azure bằng SWA CLI:
+2. Deploy lên Azure bằng SWA CLI:
 
 ```bash
 swa deploy ./out --env production
@@ -97,9 +119,9 @@ yarn deploy-azure
 
 ## Lưu ý Quan Trọng
 
-- Mỗi khi ngrok URL thay đổi (sau 2 giờ), bạn cần cập nhật URL trong `utils/apiConfig.js` và deploy lại frontend
-- Đảm bảo backend server luôn chạy khi triển khai frontend
-- Nếu gặp vấn đề về CORS, kiểm tra cấu hình trong `staticwebapp.config.json` và backend
+- Mỗi khi ngrok URL thay đổi, bạn chỉ cần cập nhật URL trong `staticwebapp.config.json` và deploy lại
+- Không cần thay đổi code trong ứng dụng vì chúng ta sử dụng đường dẫn tương đối
+- Cấu hình CORS không còn cần thiết vì tất cả request đều đi qua proxy
 
 ## Cách Sử Dụng Static Web Apps CLI
 

@@ -13,14 +13,16 @@ const UserContributions = ({ token }) => {
   const [isSaving, setIsSaving] = useState(false);
   const [fullSizeImage, setFullSizeImage] = useState(null);
   const [validationError, setValidationError] = useState(null);
+  const [isProduction, setIsProduction] = useState(false);
 
-  // Sử dụng imageBaseURL từ apiConfig để lấy đúng URL ngrok
-  const IMAGE_BASE_URL = apiConfig.imageBaseURL;
-
-  // Log để debug
-  console.log('Using image base URL:', IMAGE_BASE_URL);
+  // Sử dụng URL từ apiConfig
+  const API_BASE_URL = apiConfig.imageBaseURL;
+  
+  console.log('Using image base URL:', API_BASE_URL);
 
   useEffect(() => {
+    // Kiểm tra môi trường
+    setIsProduction(process.env.NODE_ENV === 'production');
     fetchUserContributions();
   }, []);
 
@@ -63,10 +65,13 @@ const UserContributions = ({ token }) => {
   const fetchUserContributions = async () => {
     try {
       setLoading(true);
-      console.log('Getting user contributions');
       const response = await getUserContributions();
-      console.log('Contributions response:', response);
+      
+      // Ghi log thông tin hữu ích
+      console.log('User contributions response:', response);
+      
       const preparedContributions = prepareContributions(response.contributions || []);
+      console.log('Prepared contributions:', preparedContributions);
       setContributions(preparedContributions);
     } catch (err) {
       console.error('Error fetching contributions:', err);
@@ -77,15 +82,15 @@ const UserContributions = ({ token }) => {
   };
 
   const prepareContributions = (items) => {
-    return items.map(item => {
-      const imgUrl = `${IMAGE_BASE_URL}/uploads/${item.image_path}`;
-      console.log(`Preparing image URL: ${imgUrl} for ${item.image_id}`);
-      return {
-        ...item,
-        src: imgUrl,
-        uploadDate: new Date(item.created_at).toLocaleDateString(),
-      };
-    });
+    return items.map(item => ({
+      ...item,
+      // Tạo URL tương đối để proxy có thể chuyển tiếp
+      // Trong môi trường local, cần thêm /uploads/ vào URL
+      imagePath: process.env.NODE_ENV === 'production' 
+        ? `${API_BASE_URL}/${item.image_path}`
+        : `${API_BASE_URL}/uploads/${item.image_path}`,
+      uploadDate: new Date(item.created_at).toLocaleDateString(),
+    }));
   };
 
   const handleEdit = (item) => {
@@ -148,7 +153,7 @@ const UserContributions = ({ token }) => {
   // Mở ảnh độ phân giải đầy đủ
   const openFullSizeImage = (item) => {
     setFullSizeImage({
-      src: item.src,
+      src: item.imagePath,
       alt: item.user_caption || 'Hình ảnh đóng góp',
       caption: item.user_caption || 'Không có mô tả'
     });
@@ -186,14 +191,25 @@ const UserContributions = ({ token }) => {
             className={styles.contributionImage}
             onClick={() => openFullSizeImage(item)}
           >
-            <Image 
-              src={item.src}
-              alt={`Contribution ${index}`}
-              width={200}
-              height={200}
-              style={{ objectFit: 'cover', cursor: 'pointer' }}
-              unoptimized={true}
-            />
+            {isProduction ? (
+              // Trong môi trường production sử dụng thẻ img với URL tương đối
+              <img 
+                src={item.imagePath} 
+                alt={`Contribution ${index}`}
+                width={200}
+                height={200}
+                style={{ objectFit: 'cover', cursor: 'pointer', maxWidth: '100%', height: 'auto' }}
+              />
+            ) : (
+              // Trong môi trường development sử dụng Next.js Image
+              <Image 
+                src={item.imagePath}
+                alt={`Contribution ${index}`}
+                width={200}
+                height={200}
+                style={{ objectFit: 'cover', cursor: 'pointer' }}
+              />
+            )}
           </div>
           
           <div className={styles.contributionDetails}>
@@ -213,9 +229,9 @@ const UserContributions = ({ token }) => {
                 )}
                 <div className={styles.editActions}>
                   <button 
-                    onClick={() => handleSaveEdit(item.image_id)} 
-                    disabled={isSaving}
+                    onClick={() => handleSaveEdit(item.image_id)}
                     className={styles.saveButton}
+                    disabled={isSaving}
                   >
                     {isSaving ? 'Đang lưu...' : 'Lưu'}
                   </button>
@@ -229,24 +245,31 @@ const UserContributions = ({ token }) => {
               </div>
             ) : (
               <>
-                <p className={styles.caption}>
-                  <strong>Mô tả:</strong> {item.user_caption || 'Không có mô tả'}
-                </p>
-                <p className={styles.uploadDate}>
-                  <small>Ngày đóng góp: {item.uploadDate}</small>
-                </p>
-                <div className={styles.actions}>
+                <div className={styles.captionBox}>
+                  <h3>Mô tả của bạn:</h3>
+                  <p>{item.user_caption || "Không có mô tả"}</p>
+                </div>
+                {item.ai_caption && (
+                  <div className={styles.captionBox}>
+                    <h3>Mô tả AI:</h3>
+                    <p>{item.ai_caption}</p>
+                  </div>
+                )}
+                <div className={styles.metadata}>
+                  <p>Thời gian: {item.uploadDate}</p>
+                </div>
+                <div className={styles.itemActions}>
                   <button 
                     onClick={() => handleEdit(item)}
                     className={styles.editButton}
                   >
-                    Sửa
+                    Sửa mô tả
                   </button>
                   <button 
                     onClick={() => handleDelete(item.image_id)}
                     className={styles.deleteButton}
                   >
-                    Xóa
+                    Xóa đóng góp
                   </button>
                 </div>
               </>
@@ -255,7 +278,7 @@ const UserContributions = ({ token }) => {
         </div>
       ))}
 
-      {/* Modal hiển thị ảnh đầy đủ */}
+      {/* Modal hiển thị ảnh độ phân giải đầy đủ */}
       {fullSizeImage && (
         <div className={styles.imageModal} onClick={closeFullSizeImage}>
           <div className={styles.modalContent} onClick={handleModalContentClick}>
