@@ -5,11 +5,6 @@
   },
   "routes": [
     {
-      "route": "/*",
-      "serve": "/index.html",
-      "statusCode": 200
-    },
-    {
       "route": "/api/*",
       "allowedRoles": ["anonymous", "authenticated"],
       "headers": {
@@ -17,6 +12,11 @@
         "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With"
       }
+    },
+    {
+      "route": "/*",
+      "serve": "/index.html",
+      "statusCode": 200
     }
   ],
   "responseOverrides": {
