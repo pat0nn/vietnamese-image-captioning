@@ -4,7 +4,39 @@
 
 Nếu bạn thấy thông báo "Bạn chưa có đóng góp nào" trên trang "Hồ sơ của tôi", nhưng chắc chắn rằng đã có đóng góp trong database, đây có thể là do một trong những vấn đề sau:
 
-### 1. Vấn đề API URL và CORS
+### 0. Sử dụng trang kiểm tra tự động
+
+Chúng tôi đã tạo một công cụ kiểm tra tự động để giúp bạn xác định và giải quyết vấn đề:
+
+1. **Truy cập trang kiểm tra**:
+   - Mở trình duyệt và truy cập: `https://icy-river-037493600.6.azurestaticapps.net/test-ngrok`
+   - Hoặc thêm `/test-ngrok` vào URL của ứng dụng
+
+2. **Xác nhận URL ngrok**:
+   - Nếu thấy lỗi kết nối ngrok, nhấn nút "Xác nhận URL Ngrok"
+   - Nhấn "Visit Site" trong trang xác nhận ngrok
+   - Quay lại trang kiểm tra và nhấn "Kiểm tra lại"
+
+3. **Xem kết quả kiểm tra**:
+   - Nếu tất cả các endpoint đều OK, vấn đề có thể nằm ở frontend
+   - Nếu endpoint user/contributions trả về số lượng đóng góp > 0 nhưng trang hồ sơ không hiển thị, đó là lỗi hiển thị
+
+### 1. Vấn đề trang xác nhận ngrok
+
+Một trong những vấn đề phổ biến nhất là trang xác nhận bảo mật của ngrok. Khi sử dụng ngrok, lần đầu tiên truy cập URL, bạn phải chấp nhận điều khoản và xác nhận URL bằng tay:
+
+1. **Xác nhận URL ngrok trước**:
+   - Mỗi khi khởi động lại ngrok, bạn cần xác nhận URL mới
+   - Mở trình duyệt và truy cập URL: `<ngrok-url>/api/ngrok-ready`
+   - Nhấn nút "Visit Site" để xác nhận
+   - Đợi cho đến khi thấy thông báo JSON `{"success": true, ...}`
+
+2. **Xem log từ console**:
+   - Nếu bạn thấy HTML được trả về thay vì JSON, đó là trang xác nhận ngrok
+   - Chúng tôi đã thêm tham số `_ngrok_skip_browser_warning=true` vào tất cả các request
+   - Nhưng vẫn cần xác nhận URL lần đầu trước khi tham số trên có tác dụng
+
+### 2. Vấn đề API URL và CORS
 
 Khi frontend được deploy trên Azure Static Web Apps và backend chạy qua ngrok, chúng ta cần đảm bảo:
 
@@ -26,7 +58,7 @@ Khi frontend được deploy trên Azure Static Web Apps và backend chạy qua 
      ```
    - Nếu không có token hoặc token là null, hãy đăng nhập lại
 
-### 2. Sửa đường dẫn ảnh
+### 3. Sửa đường dẫn ảnh
 
 Một vấn đề phổ biến là đường dẫn ảnh không đúng. Trong file `UserContributions.js`, chúng ta đã sửa đường dẫn ảnh để sử dụng URL động:
 
@@ -47,7 +79,7 @@ Image path: <đường dẫn ảnh>
 Base URL: <URL cơ sở>
 ```
 
-### 3. Kiểm tra thông qua API Test
+### 4. Kiểm tra thông qua API Test
 
 Để kiểm tra API trực tiếp:
 
@@ -63,10 +95,10 @@ Base URL: <URL cơ sở>
 3. **Kiểm tra kết nối đến backend**:
    - Trong Console của Developer Tools, chạy:
      ```javascript
-     fetch('<ngrok-url>/api/test').then(r => r.json()).then(console.log)
+     fetch('<ngrok-url>/api/test?_ngrok_skip_browser_warning=true').then(r => r.json()).then(console.log)
      ```
 
-### 4. Kiểm tra database
+### 5. Kiểm tra database
 
 Nếu các bước trên không giải quyết được vấn đề, kết nối trực tiếp đến PostgreSQL database để kiểm tra:
 
@@ -82,7 +114,7 @@ SELECT * FROM users WHERE username = 'your_username';
 SELECT * FROM images WHERE user_id = user_id_from_above;
 ```
 
-### 5. Khởi động lại toàn bộ hệ thống
+### 6. Khởi động lại toàn bộ hệ thống
 
 Nếu không giải quyết được, hãy thử:
 
@@ -92,11 +124,15 @@ Nếu không giải quyết được, hãy thử:
    ./run_with_ngrok.sh
    ```
 
-2. Cập nhật URL mới trong Azure Portal
+2. Mở trình duyệt và xác nhận URL ngrok mới:
+   - Truy cập: `<ngrok-url>/api/ngrok-ready`
+   - Chấp nhận trang cảnh báo bằng cách nhấn "Visit Site"
 
-3. Chờ Azure build lại frontend (khoảng 1-2 phút)
+3. Cập nhật URL mới trong Azure Portal
 
-4. Thử đăng nhập lại và kiểm tra trang "Hồ sơ của tôi"
+4. Chờ Azure build lại frontend (khoảng 1-2 phút)
+
+5. Thử đăng nhập lại và kiểm tra trang "Hồ sơ của tôi"
 
 ## Liên hệ hỗ trợ
 

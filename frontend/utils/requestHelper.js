@@ -84,6 +84,16 @@ api.interceptors.request.use(
     } else {
       console.log('No token available for request');
     }
+    
+    // Thêm param ngrok skip browser warning cho tất cả request
+    // Kiểm tra xem URL hiện tại có chứa ngrok không
+    if (API_URL.includes('ngrok')) {
+      // Thêm query param để ngrok không hiển thị trang cảnh báo
+      const separator = config.url.includes('?') ? '&' : '?';
+      config.url = `${config.url}${separator}_ngrok_skip_browser_warning=true`;
+      console.log(`Modified URL with ngrok param: ${config.url}`);
+    }
+    
     return config;
   },
   (error) => {
@@ -228,8 +238,15 @@ export const getImageCaption = async (formData) => {
   }
   
   try {
-    console.log(`Gửi request đến: ${API_URL}/caption`);
-    const response = await axios.post(`${API_URL}/caption`, formData, {
+    // Thêm param ngrok
+    let url = `${API_URL}/caption`;
+    if (API_URL.includes('ngrok')) {
+      url += '?_ngrok_skip_browser_warning=true';
+      console.log(`Using URL with ngrok param: ${url}`);
+    }
+    
+    console.log(`Gửi request đến: ${url}`);
+    const response = await axios.post(url, formData, {
       withCredentials: false, // Không sử dụng cookies
       headers
     });
@@ -264,7 +281,15 @@ export const contributeImage = async (formData) => {
       console.log(pair[0] + ': ' + pair[1]);
     }
     
-    const response = await axios.post(`${API_URL}/contribute`, formData, {
+    // Thêm param ngrok
+    let url = `${API_URL}/contribute`;
+    if (API_URL.includes('ngrok')) {
+      url += '?_ngrok_skip_browser_warning=true';
+      console.log(`Using URL with ngrok param: ${url}`);
+    }
+    
+    console.log(`Gửi request đến: ${url}`);
+    const response = await axios.post(url, formData, {
       withCredentials: false, // Không sử dụng cookies
       headers
     });
@@ -296,7 +321,25 @@ export const getUserContributions = async () => {
   
   try {
     console.log('Sending request to get user contributions...');
-    const response = await api.get('/user/contributions');
+    
+    // Thêm tham số để ngăn ngrok hiển thị trang xác nhận
+    const url = `${API_URL}/user/contributions?_ngrok_skip_browser_warning=true`;
+    console.log(`Using URL with ngrok skip parameter: ${url}`);
+    
+    const response = await api.get(url);
+    
+    // Kiểm tra xem response có phải JSON hay HTML
+    const contentType = response.headers['content-type'] || '';
+    console.log(`Response content type: ${contentType}`);
+    
+    if (contentType.includes('text/html')) {
+      console.error('Received HTML response instead of JSON. This might be the ngrok warning page.');
+      console.log('Please visit the ngrok URL directly in your browser first to approve it.');
+      
+      // Trả về mảng rỗng nếu nhận được HTML
+      return { contributions: [] };
+    }
+    
     console.log('User contributions response status:', response.status);
     console.log('User contributions data:', response.data);
     return response.data;

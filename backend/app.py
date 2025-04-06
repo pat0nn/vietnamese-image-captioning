@@ -587,6 +587,16 @@ def get_user_contributions():
         print(f"Error getting user contributions: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
+# Thêm endpoint mới để xác nhận ngrok URL
+@app.route('/api/ngrok-ready', methods=['GET'])
+def ngrok_ready():
+    """Endpoint đơn giản để kiểm tra và xác nhận kết nối ngrok"""
+    return jsonify({
+        'success': True,
+        'message': 'Kết nối ngrok đã được xác nhận',
+        'timestamp': datetime.now().isoformat()
+    })
+
 # API to update user's contribution
 @app.route('/api/contribution/<image_id>', methods=['PUT'])
 def update_contribution(image_id):

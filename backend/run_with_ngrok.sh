@@ -52,6 +52,12 @@ echo
 echo "✨ Use this URL when configuring your frontend environment:"
 echo "NEXT_PUBLIC_API_URL=$NGROK_URL/api"
 echo
+echo "✨ LƯU Ý QUAN TRỌNG: Bạn cần xác nhận URL ngrok trước khi sử dụng!"
+echo "   1. Mở trình duyệt và truy cập: $NGROK_URL/api/ngrok-ready"
+echo "   2. Nhấn nút 'Visit Site' để xác nhận URL"
+echo "   3. Khi thấy thông báo JSON 'success: true', URL đã được xác nhận"
+echo "   4. Bạn có thể tiếp tục sử dụng ứng dụng sau khi xác nhận URL"
+echo
 echo "✨ Testing CORS configuration..."
 curl -s -I -X OPTIONS -H "Origin: https://icy-river-037493600.6.azurestaticapps.net" \
     -H "Access-Control-Request-Method: GET" \
