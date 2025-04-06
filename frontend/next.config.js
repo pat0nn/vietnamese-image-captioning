@@ -2,7 +2,7 @@
 const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['localhost', 'ngrok-free.app', 'ngrok.io'],
+    domains: ['localhost', 'ngrok-free.app', 'ngrok.io', '7e6a-116-96-47-45.ngrok-free.app'],
     remotePatterns: [
       {
         protocol: 'https',

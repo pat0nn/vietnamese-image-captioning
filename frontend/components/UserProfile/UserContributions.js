@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { getUserContributions, updateContribution, deleteContribution } from '../../utils/requestHelper';
 import styles from '../../styles/userProfile.module.css';
-import axios from 'axios';
+import apiConfig from '../../utils/apiConfig';
 
 const UserContributions = ({ token }) => {
   const [contributions, setContributions] = useState([]);
@@ -14,8 +14,11 @@ const UserContributions = ({ token }) => {
   const [fullSizeImage, setFullSizeImage] = useState(null);
   const [validationError, setValidationError] = useState(null);
 
-  // API base URL from environment variable or default
-  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL?.replace('/api', '') || 'http://localhost:5000';
+  // Sử dụng imageBaseURL từ apiConfig để lấy đúng URL ngrok
+  const IMAGE_BASE_URL = apiConfig.imageBaseURL;
+
+  // Log để debug
+  console.log('Using image base URL:', IMAGE_BASE_URL);
 
   useEffect(() => {
     fetchUserContributions();
@@ -60,7 +63,9 @@ const UserContributions = ({ token }) => {
   const fetchUserContributions = async () => {
     try {
       setLoading(true);
+      console.log('Getting user contributions');
       const response = await getUserContributions();
+      console.log('Contributions response:', response);
       const preparedContributions = prepareContributions(response.contributions || []);
       setContributions(preparedContributions);
     } catch (err) {
@@ -72,11 +77,15 @@ const UserContributions = ({ token }) => {
   };
 
   const prepareContributions = (items) => {
-    return items.map(item => ({
-      ...item,
-      src: `${API_BASE_URL}/uploads/${item.image_path}`,
-      uploadDate: new Date(item.created_at).toLocaleDateString(),
-    }));
+    return items.map(item => {
+      const imgUrl = `${IMAGE_BASE_URL}/uploads/${item.image_path}`;
+      console.log(`Preparing image URL: ${imgUrl} for ${item.image_id}`);
+      return {
+        ...item,
+        src: imgUrl,
+        uploadDate: new Date(item.created_at).toLocaleDateString(),
+      };
+    });
   };
 
   const handleEdit = (item) => {
@@ -139,7 +148,7 @@ const UserContributions = ({ token }) => {
   // Mở ảnh độ phân giải đầy đủ
   const openFullSizeImage = (item) => {
     setFullSizeImage({
-      src: `${API_BASE_URL}/uploads/${item.image_path}`,
+      src: item.src,
       alt: item.user_caption || 'Hình ảnh đóng góp',
       caption: item.user_caption || 'Không có mô tả'
     });
@@ -178,11 +187,12 @@ const UserContributions = ({ token }) => {
             onClick={() => openFullSizeImage(item)}
           >
             <Image 
-              src={`${API_BASE_URL}/uploads/${item.image_path}`}
+              src={item.src}
               alt={`Contribution ${index}`}
               width={200}
               height={200}
               style={{ objectFit: 'cover', cursor: 'pointer' }}
+              unoptimized={true}
             />
           </div>
           
@@ -203,9 +213,9 @@ const UserContributions = ({ token }) => {
                 )}
                 <div className={styles.editActions}>
                   <button 
-                    onClick={() => handleSaveEdit(item.image_id)}
-                    className={styles.saveButton}
+                    onClick={() => handleSaveEdit(item.image_id)} 
                     disabled={isSaving}
+                    className={styles.saveButton}
                   >
                     {isSaving ? 'Đang lưu...' : 'Lưu'}
                   </button>
@@ -219,31 +229,24 @@ const UserContributions = ({ token }) => {
               </div>
             ) : (
               <>
-                <div className={styles.captionBox}>
-                  <h3>Mô tả của bạn:</h3>
-                  <p>{item.user_caption || "Không có mô tả"}</p>
-                </div>
-                {item.ai_caption && (
-                  <div className={styles.captionBox}>
-                    <h3>Mô tả AI:</h3>
-                    <p>{item.ai_caption}</p>
-                  </div>
-                )}
-                <div className={styles.metadata}>
-                  <p>Thời gian: {item.uploadDate}</p>
-                </div>
-                <div className={styles.itemActions}>
+                <p className={styles.caption}>
+                  <strong>Mô tả:</strong> {item.user_caption || 'Không có mô tả'}
+                </p>
+                <p className={styles.uploadDate}>
+                  <small>Ngày đóng góp: {item.uploadDate}</small>
+                </p>
+                <div className={styles.actions}>
                   <button 
                     onClick={() => handleEdit(item)}
                     className={styles.editButton}
                   >
-                    Sửa mô tả
+                    Sửa
                   </button>
                   <button 
                     onClick={() => handleDelete(item.image_id)}
                     className={styles.deleteButton}
                   >
-                    Xóa đóng góp
+                    Xóa
                   </button>
                 </div>
               </>
@@ -252,7 +255,7 @@ const UserContributions = ({ token }) => {
         </div>
       ))}
 
-      {/* Modal hiển thị ảnh độ phân giải đầy đủ */}
+      {/* Modal hiển thị ảnh đầy đủ */}
       {fullSizeImage && (
         <div className={styles.imageModal} onClick={closeFullSizeImage}>
           <div className={styles.modalContent} onClick={handleModalContentClick}>
