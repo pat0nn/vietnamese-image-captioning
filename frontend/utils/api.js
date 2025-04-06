@@ -1,10 +1,11 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import apiConfig from './apiConfig';
 
 // Hằng số
 const TOKEN_KEY = 'auth_token';
-// Sử dụng biến môi trường hoặc giá trị mặc định cho API URL
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+// Sử dụng baseURL từ apiConfig
+const API_URL = apiConfig.baseURL;
 
 /**
  * Lưu token vào cả localStorage và cookie

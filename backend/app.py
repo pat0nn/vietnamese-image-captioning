@@ -14,7 +14,14 @@ from datetime import datetime, timedelta
 import jwt
 
 app = Flask(__name__, static_folder=None)  # Tắt thư mục static mặc định
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000", "supports_credentials": True}})
+
+# Cấu hình CORS để cho phép truy cập từ Azure Static Web Apps và các môi trường phát triển
+CORS(app, resources={r"/*": {
+    "origins": ["http://localhost:3000", "https://*.azurestaticapps.net", "https://*.ngrok-free.app", "https://*.ngrok.io"],
+    "supports_credentials": True, 
+    "allow_headers": ["Content-Type", "Authorization"], 
+    "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"]
+}})
 
 # SECRET_KEY mới, đảm bảo dài và đủ mạnh (nên đặt trong biến môi trường trong production)
 app.config['SECRET_KEY'] = 'hNOg9JHiXCjUcqQzNtvYFKa7eksRLdwSGIfupW5M23T4vPDyZm'

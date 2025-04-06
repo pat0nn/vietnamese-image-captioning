@@ -1,0 +1,10 @@
+version: "2"
+authtoken: YOUR_NGROK_AUTH_TOKEN  # Thêm token của bạn từ https://dashboard.ngrok.com/get-started/your-authtoken
+web_addr: localhost:4040  # Địa chỉ của ngrok web interface
+tunnels:
+  backend:
+    addr: 5000  # Port của Flask app
+    proto: http
+    inspect: true
+    host_header: "localhost:5000"
+    schemes: ['https'] 

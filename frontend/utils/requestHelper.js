@@ -1,9 +1,10 @@
 import axios from "axios";
 import { useState } from "react";
 import Cookies from 'js-cookie';
+import apiConfig from './apiConfig';
 
 const TOKEN_KEY = 'auth_token';
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
+const API_URL = apiConfig.baseURL;
 
 // Save token to localStorage and Cookies for redundancy
 export const saveToken = (token) => {

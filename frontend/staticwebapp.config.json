@@ -1,12 +1,13 @@
 {
   "navigationFallback": {
     "rewrite": "/index.html",
-    "exclude": ["/images/*", "/static/*", "/*.css", "/*.js"]
+    "exclude": ["/images/*", "/static/*", "/*.css", "/*.js", "/*.png", "/*.jpg", "/*.jpeg", "/*.gif", "/*.svg"]
   },
   "routes": [
     {
-      "route": "/api/*",
-      "allowedRoles": ["anonymous", "authenticated"]
+      "route": "/*",
+      "serve": "/index.html",
+      "statusCode": 200
     }
   ],
   "responseOverrides": {
@@ -14,5 +15,13 @@
       "rewrite": "/index.html",
       "statusCode": 200
     }
+  },
+  "globalHeaders": {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization"
+  },
+  "mimeTypes": {
+    ".json": "application/json"
   }
 } 
