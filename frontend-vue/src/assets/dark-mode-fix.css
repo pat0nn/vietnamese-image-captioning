@@ -1,0 +1,55 @@
+/* Dark mode fixes to ensure no white areas show up */
+:root {
+  --bg-dark: #111827; /* same as gray-900 */
+  --bg-dark-lighter: #1F2937; /* same as gray-800 */
+}
+
+.dark {
+  background-color: var(--bg-dark);
+  color-scheme: dark;
+}
+
+.dark * {
+  color-scheme: dark;
+}
+
+html.dark,
+body.dark,
+#app.dark {
+  background-color: var(--bg-dark);
+}
+
+.dark .dashboard-card {
+  background-color: var(--bg-dark-lighter);
+  color: white;
+}
+
+/* This will force children of any element to inherit dark mode background if they don't specify one */
+.dark *:not([class*="bg-"]),
+.dark *::before,
+.dark *::after {
+  border-color: inherit;
+}
+
+/* Apply dark background to all major containers */
+.dark div:not([class*="bg-"]):not(.dashboard-card *):not(.tooltip):not(.popover):not(.dropdown) {
+  background-color: inherit;
+}
+
+.dark table {
+  background-color: var(--bg-dark-lighter);
+}
+
+/* Ensure scrollbars match dark theme */
+.dark ::-webkit-scrollbar {
+  background-color: var(--bg-dark);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background-color: #374151; /* gray-700 */
+  border-radius: 0.375rem;
+}
+
+.dark ::-webkit-scrollbar-track {
+  background-color: var(--bg-dark-lighter);
+} 

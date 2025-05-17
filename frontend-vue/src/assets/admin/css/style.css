@@ -1,0 +1,26 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    @apply bg-gray-50 dark:bg-gray-900;
+  }
+  body {
+    @apply bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white min-h-screen;
+  }
+}
+
+@layer components {
+  .sidebar-item {
+    @apply flex items-center p-2 text-base font-normal text-gray-900 rounded-lg dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700;
+  }
+
+  .sidebar-item.active {
+    @apply bg-gray-100 dark:bg-gray-700;
+  }
+
+  .dashboard-card {
+    @apply p-4 bg-white border border-gray-200 rounded-lg shadow-sm 2xl:col-span-2 dark:border-gray-700 dark:text-white sm:p-6 dark:bg-gray-800;
+  }
+} 

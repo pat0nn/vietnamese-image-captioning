@@ -1,0 +1,18 @@
+/* We'll use a CDN import for Tailwind instead of direct imports */
+
+/* Custom styles below */
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:root {
+  --darkGrey: #4f4f4f;
+  --midGrey: #a9a9a9;
+  --lightGrey: #bdbdbd;
+  --deepBlue: #2f80ed;
+  --lightBlue: #f6f8fb;
+  --white: #ffffff;
+  --borderBlue: #97bef4;
+}

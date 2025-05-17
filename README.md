@@ -1,1 +1,0 @@
-# vietnamese-image-captioning
