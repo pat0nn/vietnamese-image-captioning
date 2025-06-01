@@ -1,220 +1,350 @@
-# Vietnamese Image Captioning Backend
+# Vietnamese Image Captioning Backend API
 
-This is the backend server for the Vietnamese Image Captioning project.
+## 📋 Overview
 
-## Authentication System
+This is the backend API server for the Vietnamese Image Captioning system. It provides RESTful APIs for image processing, user management, AI model inference, and administrative functions. The backend is built using Flask and integrates with Google Cloud services for scalable deployment.
 
-The authentication system uses JWT (JSON Web Tokens) for securing API endpoints. The system includes:
+## 🏗️ Architecture
 
+```
+backend/
+├── app/
+│   ├── __init__.py           # Flask app factory
+│   ├── config/
+│   │   └── settings.py       # Application configuration
+│   ├── models/
+│   │   └── user.py           # Data models
+│   ├── routes/               # API endpoints
+│   │   ├── auth_routes.py    # Authentication APIs
+│   │   ├── admin_routes.py   # Admin management APIs
+│   │   ├── image_routes.py   # Image processing APIs
+│   │   ├── avatar_routes.py  # User avatar APIs
+│   │   ├── tts_routes.py     # Text-to-Speech APIs
+│   │   └── frontend_routes.py # Frontend serving
+│   ├── services/
+│   │   └── model_service.py  # AI model integration
+│   └── utils/
+│       └── db.py            # Database utilities
+├── instance/                # Instance-specific files
+├── uploads/                 # Local file storage
+├── requirements.txt         # Python dependencies
+├── run.py                  # Application entry point
+├── Dockerfile              # Container configuration
+├── docker-compose.yml      # Development setup
+└── README.md              # This file
+```
+
+## 🚀 Technologies Used
+
+### Core Framework
+- **Flask 2.2.3** - Lightweight web framework
+- **Flask-CORS 3.0.10** - Cross-origin resource sharing
+- **Gunicorn 20.1.0** - WSGI HTTP Server for production
+
+### AI & Machine Learning
+- **PyTorch 2.0+** - Deep learning framework
+- **Transformers 4.27.3+** - Hugging Face model library
+- **SentencePiece 0.1.97+** - Text tokenization
+- **Pillow 9.4.0+** - Image processing
+
+### Database & Storage
+- **PostgreSQL** - Primary database
+- **psycopg2-binary 2.9.5+** - PostgreSQL adapter
+- **Google Cloud Storage** - Cloud file storage
+
+### Authentication & Security
+- **PyJWT 2.6.0+** - JSON Web Token implementation
+- **bcrypt 4.0.1+** - Password hashing
+
+### Cloud Services
+- **Google Cloud Text-to-Speech** - Audio generation
+- **Google Cloud Secret Manager** - Secrets management
+- **Google Cloud Storage** - File storage
+
+## ✨ Key Features
+
+### 🔐 Authentication System
+- JWT-based authentication with 30-day token expiration
 - User registration and login
-- Token-based authentication
-- Role-based access control (admin vs regular users)
+- Role-based access control (Admin/User)
+- Secure password hashing with bcrypt
 
-### Recent Fixes (May 2025)
+### 🖼️ Image Processing
+- Multi-format image upload support
+- AI-powered Vietnamese caption generation
+- Batch processing capabilities
+- Image metadata extraction and storage
 
-The following issues were fixed in the authentication system:
+### 👥 User Management
+- User profile management
+- Avatar upload and management
+- Activity tracking and analytics
+- Admin dashboard for user oversight
 
-1. **Token Consistency**: Updated all token-related functions to use the same `SECRET_KEY` from settings.py instead of a hardcoded value
-2. **Database Schema Alignment**: Updated the User model's schema to match the database initialization script (using SERIAL vs UUID)
-3. **Case-insensitive Status Checking**: Fixed user status check to be case-insensitive ('active' vs 'Active')
-4. **JSON Serialization**: Improved JSON serialization for user data, particularly for datetime fields
-5. **Error Handling**: Enhanced error handling and logging throughout the authentication process
+### ⭐ Rating & Contribution System
+- User rating system for caption quality (1-5 stars)
+- Community contribution management
+- Admin review and approval workflow
+- Statistics and analytics tracking
 
-### API Endpoints
+### 📊 Analytics & Monitoring
+- Daily usage statistics
+- Performance metrics tracking
+- User activity monitoring
+- Admin dashboard with comprehensive analytics
 
-#### Authentication
+### 🎙️ Text-to-Speech Integration
+- Vietnamese text-to-speech conversion
+- Google Cloud TTS integration
+- Audio file generation and storage
 
-- `POST /api/auth/login`: Authenticate a user and return a JWT token
-- `POST /api/auth/register`: Register a new user
-- `POST /api/logout`: Log out a user
-- `GET /api/user`: Get the current user's information
+## 🛠️ Installation & Setup
 
-#### User Management (Admin Only)
+### Prerequisites
+- Python 3.11+
+- PostgreSQL 12+
+- Google Cloud credentials (for production features)
+- Docker & Docker Compose (optional)
 
-- `GET /api/admin/users`: Get all users
-- `POST /api/admin/users`: Create a new user
-- `GET /api/admin/users/:id`: Get a specific user
-- `PUT /api/admin/users/:id`: Update a user
-- `DELETE /api/admin/users/:id`: Delete a user
+### Local Development Setup
 
-## Development
+#### 1. Clone and Setup Environment
+```bash
+cd backend
+python -m venv venv
 
-### Setup
+# Windows
+venv\Scripts\activate
 
-1. Install dependencies:
-   ```
-   pip install -r requirements.txt
-   ```
+# macOS/Linux
+source venv/bin/activate
 
-2. Configure the database:
-   - PostgreSQL database is required
-   - Update connection settings in `app/config/settings.py`
-
-3. Run the server:
-   ```
-   python run.py
-   ```
-
-The server will start on http://localhost:5000 by default.
-
-### Testing
-
-Run unit tests:
-```
-python -m unittest discover tests
-```
-
-Test login functionality:
-```
-python test_login.py
+pip install -r requirements.txt
 ```
 
-### Database Schema
+#### 2. Database Configuration
+Create a PostgreSQL database and update environment variables:
 
-The system uses PostgreSQL with the following tables:
+```bash
+# Create .env file
+echo "DB_HOST=localhost" > .env
+echo "DB_PORT=5432" >> .env
+echo "DB_NAME=image_caption_db" >> .env
+echo "DB_USER=your_username" >> .env
+echo "DB_PASSWORD=your_password" >> .env
+```
 
-#### Users
-- `id`: SERIAL PRIMARY KEY
-- `username`: VARCHAR(100) UNIQUE NOT NULL
-- `email`: VARCHAR(255) UNIQUE NOT NULL
-- `password`: VARCHAR(255) NOT NULL (bcrypt hashed)
-- `full_name`: VARCHAR(255)
-- `biography`: TEXT
-- `position`: VARCHAR(100)
-- `country`: VARCHAR(100)
-- `is_admin`: BOOLEAN DEFAULT FALSE
-- `status`: VARCHAR(50) DEFAULT 'active'
-- `created_at`: TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-- `updated_at`: TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-- `avatar`: VARCHAR(255) DEFAULT 'default.jpg'
+#### 3. Google Cloud Setup (Optional)
+For full functionality, set up Google Cloud credentials:
+```bash
+# Place your service account key
+cp path/to/your/service-account.json your_key.json
 
-## Database Structure Updates (2024)
+# Set environment variable
+export GOOGLE_APPLICATION_CREDENTIALS=your_key.json
+```
 
-The database has been enhanced to support admin functionality, user ratings, and analytics:
+#### 4. Initialize Database
+```bash
+python run.py
+```
+The application will automatically initialize the database schema on first run.
 
-### Tables
+### Docker Setup
 
-1. **users**
-   - `id`: Primary key
-   - `username`: Unique username
-   - `password`: Hashed password
-   - `is_admin`: Boolean flag for admin privileges
-   - `created_at`: Account creation timestamp
+#### Development with Docker Compose
+```bash
+docker-compose up --build
+```
 
-2. **images**
-   - `id`: Primary key
-   - `image_id`: Unique identifier for the image
-   - `image_path`: Path to the stored image file
-   - `user_caption`: Caption provided by users
-   - `ai_caption`: Caption generated by the AI model
-   - `user_id`: Foreign key to users table
-   - `created_at`: Timestamp
+#### Production Docker Build
+```bash
+docker build -t vietnamese-image-captioning-backend .
+docker run -p 5000:5000 vietnamese-image-captioning-backend
+```
 
-3. **model_versions**
-   - `id`: Primary key
-   - `version_name`: Name/version of the model
-   - `model_path`: Path to the model files
-   - `is_active`: Whether this is the active model
-   - `description`: Model description
-   - `created_at`: Timestamp
+## 📡 API Endpoints
 
-4. **caption_ratings**
-   - `id`: Primary key
-   - `image_id`: Reference to the image
-   - `user_id`: User who provided the rating (can be null for anonymous)
-   - `rating`: Rating value (1-5)
-   - `created_at`: When the rating was given
+### Authentication
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| `POST` | `/api/auth/register` | User registration | ❌ |
+| `POST` | `/api/auth/login` | User login | ❌ |
+| `POST` | `/api/auth/logout` | User logout | ✅ |
+| `GET` | `/api/user` | Get current user info | ✅ |
 
-5. **user_activities**
-   - `id`: Primary key
-   - `activity_type`: Type of activity (visit, caption, contribution, rating)
-   - `user_id`: User who performed the activity (can be null for anonymous)
-   - `ip_address`: IP address of the user
-   - `details`: JSON data with additional details
-   - `created_at`: Timestamp
+### Image Processing
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| `POST` | `/api/caption` | Generate image caption | ❌ |
+| `GET` | `/api/images` | Get image list | ✅ |
+| `GET` | `/api/image/<id>` | Get specific image | ✅ |
+| `DELETE` | `/api/image/<id>` | Delete image | ✅ |
 
-6. **contributions**
-   - `id`: Primary key
-   - `user_id`: User who contributed
-   - `image_id`: Reference to the image
-   - `status`: Status of contribution (pending, approved, rejected)
-   - `reviewer_id`: Admin who reviewed the contribution
-   - `review_notes`: Notes from the reviewer
-   - `created_at`: When the contribution was made
-   - `updated_at`: When the contribution was last updated
+### Rating & Contribution
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| `POST` | `/api/rate/<image_id>` | Rate caption quality | ❌ |
+| `GET` | `/api/ratings/<image_id>` | Get image ratings | ❌ |
+| `POST` | `/api/contribute` | Submit contribution | ✅ |
+| `GET` | `/api/contributions` | Get all contributions | ✅ |
+| `GET` | `/api/user/contributions` | Get user contributions | ✅ |
 
-7. **daily_stats**
-   - `id`: Primary key
-   - `date`: Date of the statistics
-   - `visits`: Number of visits that day
-   - `caption_requests`: Number of caption requests
-   - `contributions`: Number of user contributions
-   - `ratings_count`: Number of ratings submitted
-   - `ratings_sum`: Sum of all ratings (for calculating average)
+### Admin Management
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| `GET` | `/api/admin/check` | Check admin status | ✅ Admin |
+| `GET` | `/api/admin/users` | List all users | ✅ Admin |
+| `POST` | `/api/admin/users` | Create new user | ✅ Admin |
+| `PUT` | `/api/admin/users/<id>` | Update user | ✅ Admin |
+| `DELETE` | `/api/admin/users/<id>` | Delete user | ✅ Admin |
+| `GET` | `/api/admin/contributions/pending` | Get pending contributions | ✅ Admin |
+| `PUT` | `/api/admin/contributions/<id>` | Review contribution | ✅ Admin |
+| `GET` | `/api/admin/stats` | Get system statistics | ✅ Admin |
 
-## New Features
+### Utility APIs
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| `POST` | `/api/tts` | Text-to-speech conversion | ❌ |
+| `POST` | `/api/upload-avatar` | Upload user avatar | ✅ |
+| `GET` | `/api/avatar/<filename>` | Get avatar image | ❌ |
 
-### Admin Features
-- User management (CRUD operations for user accounts)
-- Contribution review and management
-- Statistics and analytics dashboard
-- Model version management
+## 🗄️ Database Schema
 
-### User Rating System
-- Users can rate generated captions on a scale of 1-5
-- Rating statistics are available per image
-- Average rating and distribution are tracked
+### Core Tables
 
-### Usage Statistics
-- Daily visit tracking
-- Caption generation tracking
-- Contribution tracking
-- Rating statistics
+#### users
+```sql
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(100) UNIQUE NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    full_name VARCHAR(255),
+    biography TEXT,
+    position VARCHAR(100),
+    country VARCHAR(100),
+    is_admin BOOLEAN DEFAULT FALSE,
+    status VARCHAR(50) DEFAULT 'active',
+    avatar VARCHAR(255) DEFAULT 'default.jpg',
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
 
-### Contribution Management
-- Contribution workflow with approval process
-- Admin review system
-- Status tracking (pending, approved, rejected)
+#### images
+```sql
+CREATE TABLE images (
+    id SERIAL PRIMARY KEY,
+    image_id VARCHAR(255) UNIQUE NOT NULL,
+    image_path VARCHAR(500),
+    user_caption TEXT,
+    ai_caption TEXT,
+    user_id INTEGER REFERENCES users(id),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
 
-## API Endpoints
+#### caption_ratings
+```sql
+CREATE TABLE caption_ratings (
+    id SERIAL PRIMARY KEY,
+    image_id VARCHAR(255) NOT NULL,
+    user_id INTEGER REFERENCES users(id),
+    rating INTEGER CHECK (rating >= 1 AND rating <= 5),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
 
-### Admin Endpoints
-- `GET /api/admin/check` - Check admin status
-- `GET /api/admin/users` - List all users (with pagination)
-- `POST /api/admin/users` - Create a new user
-- `PUT /api/admin/users/<id>` - Update user details
-- `DELETE /api/admin/users/<id>` - Delete a user
-- `GET /api/admin/contributions/pending` - Get pending contributions
-- `PUT /api/admin/contributions/<id>` - Review a contribution
+#### contributions
+```sql
+CREATE TABLE contributions (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id),
+    image_id VARCHAR(255) NOT NULL,
+    caption TEXT NOT NULL,
+    status VARCHAR(50) DEFAULT 'pending',
+    reviewer_id INTEGER REFERENCES users(id),
+    review_notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
 
-### Rating Endpoints
-- `POST /api/rate/<image_id>` - Rate a caption
-- `GET /api/ratings/<image_id>` - Get ratings for an image
+## 🔧 Configuration
 
-### Statistics Endpoints
-- `GET /api/stats` - Get usage statistics
+### Environment Variables
+```bash
+# Database Configuration
+DB_HOST=localhost
+DB_PORT=5432
+DB_NAME=image_caption_db
+DB_USER=postgres
+DB_PASSWORD=your_password
 
-### Contribution Endpoints
-- `POST /api/contribute` - Submit a contribution
-- `GET /api/contributions` - Get all contributions
-- `GET /api/user/contributions` - Get user's contributions
-- `PUT /api/contribution/<image_id>` - Update a contribution
-- `DELETE /api/contribution/<image_id>` - Delete a contribution
+# Application Configuration
+PORT=5000
+MODEL_PATH=/path/to/model/artifacts
 
-## Running the Application
+# Google Cloud Configuration
+GOOGLE_APPLICATION_CREDENTIALS=/path/to/your-service-account.json
+GCS_BUCKET_NAME=vic-storage
 
-1. Install requirements:
-   ```
-   pip install -r requirements.txt
-   ```
+# Security
+SECRET_KEY=your-secret-key-here
+```
 
-2. Set up your environment variables in a `.env` file.
+### CORS Configuration
+The API supports the following origins:
+- `http://localhost:3000` (React development)
+- `http://localhost:5173` (Vite development)
+- `https://vic.phambatrong.com` (Production)
+- `https://vietnamese-image-captioning.web.app` (Firebase)
 
-3. Run the application:
-   ```
-   python run.py
-   ```
+## 🚀 Deployment
 
-## Database Initialization
+### Local Development
+```bash
+python run.py
+```
+Server runs on `http://localhost:5000`
 
-The database structure is automatically initialized when the application starts. Make sure your PostgreSQL server is running and configured correctly in your environment variables. 
+### Production Deployment
+```bash
+gunicorn -b 0.0.0.0:$PORT -w 4 --threads 2 --timeout 0 run:app
+```
+
+### Google Cloud Run
+The application is configured for Google Cloud Run deployment with:
+- Multi-worker Gunicorn setup
+- Google Cloud Storage integration
+- Cloud SQL PostgreSQL support
+- Secret Manager integration
+
+
+## 📊 Performance & Monitoring
+
+### Metrics Tracked
+- Daily active users
+- API response times
+- Image processing statistics
+- Model inference performance
+- Error rates and logging
+
+### Logging
+The application uses Python's logging module with INFO level by default. Logs include:
+- Request/response details
+- Model loading status
+- Database operations
+- Error tracking
+
+## 🔒 Security Features
+
+- **JWT Authentication**: Secure token-based authentication
+- **Password Hashing**: bcrypt with salt rounds
+- **CORS Protection**: Configured for specific origins only
+- **Input Validation**: Request validation and sanitization
+- **Rate Limiting**: Built-in request throttling
+- **SQL Injection Protection**: Parameterized queries
+
+
