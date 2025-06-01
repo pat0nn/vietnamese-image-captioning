@@ -35,8 +35,7 @@ ViT-BARTpho-project/
 
 ## Prerequisites
 
-- Python 3.8+
-- PyTorch 1.10+
+- Python 3.11
 - Transformers 4.18+
 - Datasets 2.0+
 - Weights & Biases (optional)
@@ -45,8 +44,8 @@ ViT-BARTpho-project/
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/ViT-BARTpho-project.git
-cd ViT-BARTpho-project
+git clone https://github.com/pat0nn/vietnamese-image-captioning.git
+cd vit-bartpho-model
 ```
 
 2. Install the required packages:
@@ -195,13 +194,3 @@ Common issues:
 - **Out of memory errors**: Reduce batch size in `config.py`
 - **Slow training**: Enable FP16 training by setting `USE_FP16=True` in `config.py`
 - **W&B connection issues**: Check that your API key is correctly set
-
-## License
-
-[Your License Information]
-
-## Acknowledgements
-
-- Hugging Face Transformers library
-- Vision Transformer (ViT) by Google Research
-- BARTpho by VinAI Research

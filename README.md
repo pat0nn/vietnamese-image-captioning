@@ -1,5 +1,9 @@
 # Vietnamese Automatic Image Captioning System
 
+## 🌐 Live Demo
+
+🚀 **Website**: [https://vic.phambatrong.com/](https://vic.phambatrong.com/)
+
 ## 🎓 Graduation Project
 
 A project developing an automatic image captioning system based on **Vision Transformer (ViT)** and **BARTpho** to generate accurate Vietnamese descriptions for images automatically.
@@ -39,7 +43,7 @@ vietnamese-image-captioning/
 - **PostgreSQL** - Database
 - **JWT Authentication** - User authentication
 - **Docker** - Containerization
-- **Nginx** - Web server
+- **Gunicorn** - Web server
 
 ### AI Model
 - **PyTorch** - Deep learning framework
@@ -77,65 +81,11 @@ vietnamese-image-captioning/
 ## 🛠️ Installation and Setup
 
 ### System Requirements
-- Python 3.8+
+- Python 3.11
 - Node.js 16+
 - PostgreSQL 12+
 - Docker (optional)
 
-### 1. Clone Repository
-```bash
-git clone <repository-url>
-cd vietnamese-image-captioning
-```
-
-### 2. Backend Setup
-```bash
-cd backend
-pip install -r requirements.txt
-
-# Configure database in app/config/settings.py
-# Run database migrations
-python fix_sequence.py
-
-# Start server
-python run.py
-```
-
-### 3. Frontend Setup
-```bash
-cd frontend-vue
-npm install
-
-# Development
-npm run dev
-
-# Production build
-npm run build
-```
-
-### 4. AI Model Setup
-```bash
-cd vit-bartpho-model
-pip install -r requirements.txt
-
-# Train model
-python main.py --mode train --use_wandb
-
-# Inference
-python main.py --mode inference --image_path path/to/image.jpg
-```
-
-### 5. Run with Docker
-```bash
-# Backend
-cd backend
-docker-compose up
-
-# Frontend
-cd frontend-vue
-docker build -t frontend-vue .
-docker run -p 80:80 frontend-vue
-```
 
 ## 📊 Model Evaluation
 
@@ -216,6 +166,7 @@ To contribute to the project:
 
 ## 📞 Contact
 
+- **Project Website**: [https://vic.phambatrong.com/](https://vic.phambatrong.com/)
 - Email: [Contact Email]
 - GitHub: [GitHub profile]
 - LinkedIn: [LinkedIn profile]
