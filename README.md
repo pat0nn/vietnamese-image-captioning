@@ -185,40 +185,6 @@ The model is evaluated using standard metrics:
 5. **User Feedback**: Collect ratings and contributions
 6. **Model Improvement**: Use feedback to improve model
 
-## 📈 Experimental Results
-
-- **BLEU-4 Score**: [Fill in results]
-- **ROUGE-L Score**: [Fill in results]
-- **Human Evaluation**: [Fill in results]
-- **Inference Speed**: [Fill in timing]
-
-## 🤝 Contributing
-
-To contribute to the project:
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Create a Pull Request
-
-## 📄 License
-
-[Fill in license information]
-
-## 👥 Authors
-
-**[Student Name]**
-- Email: [Email]
-- Faculty: [Faculty Name]
-- University: [University Name]
-- Year: [Academic Year]
-
-**Supervisor**: [Supervisor Name]
-
-## 📞 Contact
-
-- Email: [Contact Email]
-- GitHub: [GitHub profile]
-- LinkedIn: [LinkedIn profile]
 
 ---
 
