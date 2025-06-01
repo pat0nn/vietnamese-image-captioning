@@ -1,0 +1,8 @@
+node_modules/
+.env
+uploads/
+frontend.zip
+model/
+gcp/
+artifacts/
+backend/vietnamese-image-captioning-dd16a6c19d7f.json
