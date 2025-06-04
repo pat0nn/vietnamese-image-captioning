@@ -5,6 +5,7 @@ import { useAuthStore } from '../stores/auth';
 import AuthNav from '../components/Auth/AuthNav.vue';
 import AuthModal from '../components/Auth/AuthModal.vue';
 import RatingStars from '../components/RatingStars.vue';
+import Footer from '../components/Footer.vue';
 import { getImageCaption, contributeImage, submitRating, textToSpeech } from '../utils/requestHelper';
 import { playAudioFromBase64, stopAudio } from '../utils/audioHelper';
 import { useRouter } from 'vue-router';
@@ -458,17 +459,17 @@ const handleRatingSubmitted = (rating) => {
 </script>
 
 <template>
-  <div>
+  <div class="page-container">
     <!-- Navigation Bar -->
     <div class="bg-white shadow-md px-6 py-4 flex justify-between items-center">
       <router-link to="/">
-        <h1 class="text-xl font-bold text-blue-500">Hệ Thống Mô Tả Hình Ảnh</h1>
+        <h1 class="text-xl font-bold text-blue-500">Hệ Thống Chú Thích Hình Ảnh</h1>
       </router-link>
       <AuthNav />
     </div>
     
     <!-- Main Content -->
-    <main class="container mx-auto px-4 py-8 max-w-4xl text-center">
+    <main class="container mx-auto px-4 py-8 max-w-4xl text-center flex-grow">
       <h1 class="text-2xl font-bold text-gray-800 mb-4">Tải lên ảnh của bạn</h1>
       
       <div class="mb-6">
@@ -643,6 +644,21 @@ const handleRatingSubmitted = (rating) => {
         v-if="showAuthModal" 
         @close="showAuthModal = false" 
       />
-  </main>
+    </main>
+    
+    <!-- Footer -->
+    <Footer />
   </div>
 </template>
+
+<style scoped>
+.page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.flex-grow {
+  flex: 1;
+}
+</style>

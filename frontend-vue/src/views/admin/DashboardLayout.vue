@@ -71,7 +71,7 @@
               </svg>
             </button>
             <router-link to="/" class="flex items-center truncate">
-              <span class="self-center text-xl font-semibold whitespace-nowrap truncate dark:text-white">Hệ Thống Mô Tả Hình Ảnh</span>
+              <span class="self-center text-xl font-semibold whitespace-nowrap truncate dark:text-white">Hệ Thống Chú Thích Hình Ảnh</span>
             </router-link>
           </div>
           <div class="flex items-center">
