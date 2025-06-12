@@ -15,7 +15,6 @@ export const useAuthStore = defineStore('auth', {
         user = JSON.parse(userString);
       }
     } catch (error) {
-      console.error('Error parsing user from localStorage:', error);
       // Nếu có lỗi, xóa dữ liệu không hợp lệ
       localStorage.removeItem('user');
     }
@@ -101,8 +100,6 @@ export const useAuthStore = defineStore('auth', {
     },
     
     updateUserProfile(userData) {
-      console.log('Auth store: updating user profile with:', userData);
-      console.log('Auth store: current user before update:', this.user);
       
       // Make sure we're updating with the correct property names
       // Backend might use full_name while frontend uses fullName
@@ -111,20 +108,17 @@ export const useAuthStore = defineStore('auth', {
       // Create a new user object with the updated data
       this.user = { ...this.user, ...normalizedData };
       
-      console.log('Auth store: updated user:', this.user);
       
       // Update localStorage to ensure persistence between page refreshes
       try {
         localStorage.setItem('user', JSON.stringify(this.user));
       } catch (error) {
-        console.error('Error storing user in localStorage:', error);
       }
       
       // Force a reactivity trigger by creating a completely new object
       try {
         this.user = JSON.parse(JSON.stringify(this.user));
       } catch (error) {
-        console.error('Error cloning user object:', error);
       }
       
       // Trigger a custom event that components can listen for
@@ -137,7 +131,6 @@ export const useAuthStore = defineStore('auth', {
       if (!this.token) return null;
       
       try {
-        console.log('Refreshing user profile from API');
         
         // Get the full profile data
         const response = await axios.get(`${API_URL}/api/profile`, {
@@ -147,14 +140,12 @@ export const useAuthStore = defineStore('auth', {
         });
         
         if (response.data.success && response.data.user) {
-          console.log('Got fresh profile data:', response.data.user);
           this.updateUserProfile(response.data.user);
           return response.data.user;
         }
         
         return null;
       } catch (error) {
-        console.error('Error refreshing user profile:', error);
         return null;
       }
     },

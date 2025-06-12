@@ -585,7 +585,6 @@ export default {
         contributions.value = response.data.contributions;
         totalItems.value = response.data.total;
       } catch (err) {
-        console.error('Error loading contributions:', err);
         error.value = err.message || 'Failed to load contributions';
       } finally {
         loading.value = false;
@@ -685,7 +684,6 @@ export default {
           contributions.value[index].status = status;
         }
       } catch (err) {
-        console.error(`Error ${status} contribution:`, err);
         error.value = err.message || `Failed to ${status} contribution`;
       } finally {
         loading.value = false;
@@ -709,7 +707,6 @@ export default {
         showDeleteModal.value = false;
         currentContribution.value = null;
       } catch (err) {
-        console.error('Error deleting contribution:', err);
         error.value = err.message || 'Failed to delete contribution';
       } finally {
         loading.value = false;
@@ -765,7 +762,6 @@ export default {
         showEditModal.value = false;
         currentContribution.value = null;
       } catch (err) {
-        console.error('Error updating contribution:', err);
         error.value = err.message || 'Failed to update contribution';
       } finally {
         loading.value = false;
@@ -819,7 +815,6 @@ export default {
         // Refresh contributions list
         await loadContributions();
       } catch (err) {
-        console.error('Error adding contribution:', err);
         error.value = err.message || 'Failed to add contribution';
       } finally {
         loading.value = false;

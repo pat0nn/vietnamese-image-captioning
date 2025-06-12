@@ -433,7 +433,6 @@ export default {
           }, 3000);
         }
       } catch (err) {
-        console.error('Error deleting caption:', err);
         
         // Show error toast
         toastMessage.value = 'Có lỗi xảy ra khi xóa caption';
@@ -542,7 +541,6 @@ export default {
         captions.value = response.data.captions;
         totalItems.value = response.data.total;
       } catch (err) {
-        console.error('Error loading caption history:', err);
         error.value = err.message || 'Failed to load caption history';
       } finally {
         loading.value = false;

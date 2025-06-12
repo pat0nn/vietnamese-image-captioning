@@ -57,7 +57,7 @@
       </div>
     </aside>
 
-    <div class="md:ml-64 flex-1 flex flex-col min-h-screen bg-gray-50 dark:bg-gray-900">
+    <div class="md:ml-64 flex-1 flex flex-col admin-page-container">
       <!-- Top Navbar -->
       <nav class="bg-white border-b border-gray-200 px-4 py-2.5 dark:bg-gray-800 dark:border-gray-700 fixed left-0 right-0 top-0 z-50">
         <div class="flex flex-wrap justify-between items-center">
@@ -142,9 +142,12 @@
       </nav>
 
       <!-- Page Content -->
-      <main class="p-4 pt-20 h-full flex-grow bg-gray-50 dark:bg-gray-900">
+      <main class="p-4 pt-20 admin-main-content bg-gray-50 dark:bg-gray-900">
         <router-view />
       </main>
+
+      <!-- Footer (Hidden initially, appears when scrolling down) -->
+      <Footer />
     </div>
   </div>
 </template>
@@ -154,9 +157,13 @@ import { ref, onMounted, onBeforeUnmount, computed } from 'vue';
 import { useAuthStore } from '../../stores/admin/auth';
 import { useDarkModeStore } from '../../stores/admin/darkMode';
 import { API_URL } from '../../constants';
+import Footer from '../../components/Footer.vue';
 
 export default {
   name: 'DashboardLayout',
+  components: {
+    Footer
+  },
   setup() {
     const authStore = useAuthStore();
     const darkModeStore = useDarkModeStore();
@@ -272,6 +279,17 @@ export default {
 </script>
 
 <style>
+/* Admin page container */
+.admin-page-container {
+  min-height: 150vh; /* Ensure content is tall enough to allow scrolling */
+}
+
+/* Admin main content */
+.admin-main-content {
+  min-height: 120vh; /* Make main content taller so footer appears below viewport */
+  flex: 1;
+}
+
 /* Sidebar item styling */
 .sidebar-item {
   display: flex;

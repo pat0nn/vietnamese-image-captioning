@@ -176,7 +176,6 @@ const uploadAndGetCaption = async (imageFile) => {
     
     // Check if response has both caption and audio
     if (data.caption && data.audio) {
-      console.log("Received both caption and audio data");
       
       // Save audio data
       audioData.value = data.audio;
@@ -189,7 +188,6 @@ const uploadAndGetCaption = async (imageFile) => {
           isPlaying.value = true;
           // Only display caption when audio starts playing
           imageCaption.value = data.caption;
-          console.log("Audio playing, caption displayed");
         },
         () => {
           // Callback when audio ends
@@ -198,7 +196,6 @@ const uploadAndGetCaption = async (imageFile) => {
         },
         (error) => {
           // Callback on error
-          console.error('Audio playback error:', error);
           isPlaying.value = false;
           audioRef.value = null;
           autoPlayError.value = true;
@@ -206,7 +203,6 @@ const uploadAndGetCaption = async (imageFile) => {
           // Still display caption if audio fails
           if (!imageCaption.value) {
             imageCaption.value = data.caption;
-            console.log("Audio failed to play, but caption is displayed");
           }
         }
       );
@@ -215,7 +211,6 @@ const uploadAndGetCaption = async (imageFile) => {
       // If no audio, still display caption if available
       if (data.caption) {
         imageCaption.value = data.caption;
-        console.log("No audio data, but caption is displayed");
       } else {
         throw new Error('Không nhận được caption hoặc âm thanh từ máy chủ');
       }
@@ -227,7 +222,6 @@ const uploadAndGetCaption = async (imageFile) => {
       return;
     }
     
-    console.error('Error getting caption:', error);
     clientError.value = error.message || 'Không thể nhận mô tả hình ảnh';
     toast.error('Không thể tạo mô tả hình ảnh', { timeout: 3000 });
   } finally {
@@ -263,7 +257,6 @@ const playCaption = async () => {
           audioRef.value = null;
         },
         (error) => {
-          console.error('Audio playback error:', error);
           isPlaying.value = false;
           audioRef.value = null;
           // Only show toast when really needed
@@ -291,7 +284,6 @@ const playCaption = async () => {
                 audioRef.value = null;
               },
               (error) => {
-                console.error('Audio playback error:', error);
                 isPlaying.value = false;
                 audioRef.value = null;
                 // Only show toast when really needed
@@ -306,7 +298,6 @@ const playCaption = async () => {
           throw new Error('Không nhận được dữ liệu âm thanh từ máy chủ');
         }
       } catch (error) {
-        console.error('Error fetching speech:', error);
         isPlaying.value = false;
         toast.error('Không thể tạo giọng nói', { timeout: 2000 });
       }
@@ -315,7 +306,6 @@ const playCaption = async () => {
       toast.info('Không có nội dung để phát', { timeout: 2000 });
     }
   } catch (error) {
-    console.error('Error in playCaption:', error);
     isPlaying.value = false;
     audioRef.value = null;
     toast.error('Đã xảy ra lỗi khi phát âm thanh', { timeout: 2000 });
@@ -439,7 +429,6 @@ const handleSaveContribution = async () => {
     selectedFile.value = null;
     toast.success("Đóng góp của bạn đã được lưu thành công!");
   } catch (error) {
-    console.error('Error saving contribution:', error);
     clientError.value = error.response?.data?.error || 'Không thể lưu đóng góp';
     toast.error("Có lỗi xảy ra khi lưu đóng góp của bạn.");
   } finally {
@@ -660,5 +649,29 @@ const handleRatingSubmitted = (rating) => {
 
 .flex-grow {
   flex: 1;
+}
+
+/* Mobile-specific styles to push footer down */
+@media (max-width: 768px) {
+  .page-container {
+    min-height: 120vh; /* Increase container height on mobile */
+  }
+  
+  .flex-grow {
+    min-height: 100vh; /* Ensure main content takes full viewport height */
+    padding-bottom: 2rem; /* Add some bottom padding */
+  }
+}
+
+/* For very small screens */
+@media (max-width: 480px) {
+  .page-container {
+    min-height: 130vh; /* Even more height for small screens */
+  }
+  
+  .flex-grow {
+    min-height: 110vh; /* More space for main content */
+    padding-bottom: 3rem; /* More bottom padding */
+  }
 }
 </style>

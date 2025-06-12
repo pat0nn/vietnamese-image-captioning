@@ -26,7 +26,6 @@
 export default {
   name: 'NotFound',
   mounted() {
-    console.log('Admin 404 page loaded');
   }
 }
 </script> 

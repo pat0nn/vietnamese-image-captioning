@@ -35,18 +35,14 @@ const errors = ref({
 // Get avatar URL
 const avatarUrl = computed(() => {
   // Debug user data
-  console.log('Avatar computed property - User data:', user.value);
-  console.log('Avatar value:', user.value?.avatar);
   
   if (avatarPreview.value) {
-    console.log('Using avatar preview');
     return avatarPreview.value;
   }
   
   if (user.value?.avatar) {
     // If avatar is a full URL (starts with http), use it directly
     if (user.value.avatar.startsWith('http')) {
-      console.log('Using HTTP avatar URL');
       // Add cache-busting parameter to prevent caching
       const url = user.value.avatar.includes('?') 
         ? user.value.avatar 
@@ -55,18 +51,15 @@ const avatarUrl = computed(() => {
     } else {
       // Otherwise, construct the full URL
       const url = `${API_URL}/uploads/avatars/${user.value.avatar}?t=${Date.now()}`;
-      console.log('Generated avatar URL:', url);
       return url;
     }
   }
   
-  console.log('Using default avatar');
   return '/user_9970571.svg'; // Default avatar
 });
 
 // Handle avatar loading errors
 const handleAvatarError = (e) => {
-  console.error('Avatar loading error:', e);
   // Set the target's src to the local fallback image
   e.target.src = '/user_9970571.svg';
 };
@@ -107,29 +100,24 @@ const handleAvatarChange = (event) => {
 
 // Initialize form values from user data
 const initFormValues = () => {
-  console.log('Initializing form values from user:', user.value);
   if (user.value) {
     usernameInput.value = user.value.username || '';
     fullNameInput.value = user.value.full_name || '';
-    console.log('Form values initialized:', { username: usernameInput.value, fullName: fullNameInput.value });
   }
 };
 
 // Handle the user-profile-updated custom event
 const handleProfileUpdated = (event) => {
-  console.log('Received user-profile-updated event:', event.detail);
   if (event.detail) {
     // Update the form inputs
     usernameInput.value = event.detail.username || '';
     fullNameInput.value = event.detail.full_name || '';
-    console.log('Form values updated from event:', { username: usernameInput.value, fullName: fullNameInput.value });
   }
 };
 
 // Initialize form values when component is mounted
 onMounted(() => {
   // Thêm console log để debug
-  console.log('ProfileEdit mounted, user from store:', authStore.currentUser);
   
   // Refresh user data from API
   authStore.refreshUserProfile();
@@ -148,12 +136,9 @@ onBeforeUnmount(() => {
 
 // Watch for changes in user data and update form values
 watch(() => user.value, (newUser, oldUser) => {
-  console.log('User data changed in store:', newUser);
-  console.log('Previous user data:', oldUser);
   if (newUser) {
     usernameInput.value = newUser.username || '';
     fullNameInput.value = newUser.full_name || '';
-    console.log('Form values updated from watch:', { username: usernameInput.value, fullName: fullNameInput.value });
   }
 }, { deep: true, immediate: true });
 
@@ -184,11 +169,9 @@ const updateProfile = async () => {
       }
     );
     
-    console.log('Profile update response:', response.data);
     if (response.data.success) {
       // Update local user data
       if (response.data.user) {
-        console.log('Updating user profile with:', response.data.user);
         // Update user profile in store
         authStore.updateUserProfile(response.data.user);
         
@@ -216,7 +199,6 @@ const updateProfile = async () => {
       toast.error(response.data.error || 'Không thể cập nhật thông tin');
     }
   } catch (error) {
-    console.error('Error updating profile:', error);
     const errorMessage = error.response?.data?.error || 'Đã xảy ra lỗi khi cập nhật thông tin';
     toast.error(errorMessage);
     
@@ -281,7 +263,6 @@ const updatePassword = async () => {
       toast.error(response.data.error || 'Không thể cập nhật mật khẩu');
     }
   } catch (error) {
-    console.error('Error updating password:', error);
     const errorMessage = error.response?.data?.error || 'Đã xảy ra lỗi khi cập nhật mật khẩu';
     toast.error(errorMessage);
     
@@ -319,7 +300,6 @@ const updateAvatar = async () => {
     );
     
     if (response.data.success) {
-      console.log('Avatar update success response:', response.data);
       
       // Update local user data
       if (response.data.user) {
@@ -329,7 +309,6 @@ const updateAvatar = async () => {
             ...response.data.user,
             avatar: response.data.avatar_url // Override with the full URL
           };
-          console.log('Updating user with avatar URL:', userData);
           authStore.updateUserProfile(userData);
           
           // Force refresh the avatar preview
@@ -354,7 +333,6 @@ const updateAvatar = async () => {
       
       // Force a refresh of the avatar
       setTimeout(() => {
-        console.log('Forcing avatar refresh');
         const avatarImg = document.querySelector('.avatar-container img');
         if (avatarImg) {
           const currentSrc = avatarImg.src;
@@ -365,7 +343,6 @@ const updateAvatar = async () => {
       toast.error(response.data.error || 'Không thể cập nhật ảnh đại diện');
     }
   } catch (error) {
-    console.error('Error updating avatar:', error);
     const errorMessage = error.response?.data?.error || 'Đã xảy ra lỗi khi cập nhật ảnh đại diện';
     toast.error(errorMessage);
   } finally {

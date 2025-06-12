@@ -2,7 +2,8 @@ from flask import Blueprint, request, jsonify, send_from_directory, session
 from app.utils.db import get_db_connection
 from app.utils.auth import get_current_user, is_admin, token_required
 from app.services.model_service import load_model
-from app.config.settings import MODEL_PATH, UPLOAD_FOLDER
+from app.config.settings import MODEL_PATH, UPLOAD_FOLDER, GCS_ENABLED
+from app.utils.cloud_storage import download_image
 import psycopg2.extras
 import bcrypt
 from datetime import datetime, timedelta
@@ -1181,9 +1182,9 @@ def generate_download_package(user_data):
         conn = get_db_connection()
         cursor = conn.cursor(cursor_factory=psycopg2.extras.RealDictCursor)
         
-        # Get all approved contributions with their captions
+        # Get all approved contributions with their captions and storage info
         cursor.execute("""
-            SELECT c.id, i.image_path, i.user_caption, i.ai_caption, c.created_at 
+            SELECT c.id, i.image_path, i.user_caption, i.ai_caption, c.created_at, i.storage_type
             FROM contributions c
             JOIN images i ON c.image_id = i.image_id
             WHERE c.status = 'approved'
@@ -1198,56 +1199,105 @@ def generate_download_package(user_data):
         # Create a memory file for the zip
         memory_file = io.BytesIO()
         
+        # Track statistics
+        total_approved = len(approved_contributions)
+        images_included = 0
+        missing_files = []
+        
         # Create the zip file
         with zipfile.ZipFile(memory_file, 'w', zipfile.ZIP_DEFLATED) as zf:
-            # Prepare JSON data
+            # Prepare JSON data - include ALL approved captions
             captions_data = {}
             
             for contribution in approved_contributions:
                 image_filename = os.path.basename(contribution['image_path'])
+                storage_type = contribution.get('storage_type', 'local')
                 
-                # Add image to zip
-                image_path = os.path.join(UPLOAD_FOLDER, contribution['image_path'])
-                if os.path.exists(image_path):
-                    zf.write(image_path, f"images/{image_filename}")
-                    
-                    # Add caption to JSON data
-                    captions_data[image_filename] = {
-                        "id": str(contribution['id']),
-                        "user_caption": contribution['user_caption'] or "",
-                        "created_at": contribution['created_at'].isoformat() if contribution['created_at'] else None
-                    }
+                # Always add caption to JSON data
+                captions_data[image_filename] = {
+                    "id": str(contribution['id']),
+                    "user_caption": contribution['user_caption'] or "",
+                    "ai_caption": contribution['ai_caption'] or "",
+                    "created_at": contribution['created_at'].isoformat() if contribution['created_at'] else None,
+                    "image_path": contribution['image_path'],
+                    "storage_type": storage_type
+                }
+                
+                # Try to add image to zip based on storage type
+                try:
+                    if storage_type == 'gcs' and GCS_ENABLED:
+                        # Download from Google Cloud Storage
+                        print(f"Downloading image from GCS: {contribution['image_path']}")
+                        image_data = download_image(contribution['image_path'])
+                        zf.writestr(f"images/{image_filename}", image_data)
+                        images_included += 1
+                        captions_data[image_filename]["file_included"] = True
+                        print(f"Added GCS image to zip: {image_filename}")
+                    else:
+                        # Local storage
+                        image_path = os.path.join(UPLOAD_FOLDER, contribution['image_path'])
+                        if os.path.exists(image_path):
+                            zf.write(image_path, f"images/{image_filename}")
+                            images_included += 1
+                            captions_data[image_filename]["file_included"] = True
+                            print(f"Added local image to zip: {image_filename}")
+                        else:
+                            print(f"Local image file not found: {image_path}")
+                            captions_data[image_filename]["file_included"] = False
+                            captions_data[image_filename]["error"] = "Local file not found on server"
+                            missing_files.append(f"{image_filename} (local file not found)")
+                except Exception as e:
+                    print(f"Error adding image {image_filename} to zip: {str(e)}")
+                    captions_data[image_filename]["file_included"] = False
+                    captions_data[image_filename]["error"] = str(e)
+                    missing_files.append(f"{image_filename} (error: {str(e)})")
                     
             # Write captions JSON to zip
             captions_json = json.dumps(captions_data, indent=2, ensure_ascii=False)
             zf.writestr("captions.json", captions_json)
             
-            # Add a README file
-            readme_content = f"""# Hệ Thống Mô Tả Hình Ảnh
+            # Create summary report
+            summary_report = f"""# Báo Cáo Tải Xuống Dữ Liệu
 
-## Thông tin gói dữ liệu
-- Số lượng ảnh: {len(captions_data)}
+## Thống kê
+- Tổng số đóng góp đã duyệt: {total_approved}
+- Số ảnh có trong gói: {images_included}
+- Số ảnh bị thiếu: {len(missing_files)}
 - Ngày tạo: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}
 
-## Cấu trúc thư mục
-- `/images/`: Thư mục chứa tất cả hình ảnh đã được chấp nhận
-- `/captions.json`: File JSON chứa mô tả cho mỗi hình ảnh
+## Danh sách ảnh bị thiếu
+"""
+            if missing_files:
+                for missing in missing_files:
+                    summary_report += f"- {missing}\n"
+            else:
+                summary_report += "- Không có ảnh nào bị thiếu\n"
+                
+            summary_report += f"""
+## Cấu trúc gói dữ liệu
+- `/images/`: Thư mục chứa {images_included} hình ảnh đã được chấp nhận
+- `/captions.json`: File JSON chứa mô tả cho tất cả {total_approved} đóng góp (bao gồm cả ảnh bị thiếu)
+- `/download_report.txt`: Báo cáo này
 
 ## Định dạng JSON
 ```
 {{
   "image_filename.jpg": {{
-    "id": "ID của ảnh",
+    "id": "ID của đóng góp",
     "user_caption": "Mô tả do người dùng cung cấp",
-    "created_at": "Thời gian tạo"
+    "ai_caption": "Mô tả AI (tham khảo)",
+    "created_at": "Thời gian tạo",
+    "image_path": "Đường dẫn ảnh gốc",
+    "file_included": true/false,
+    "error": "Lỗi nếu có"
   }},
   ...
 }}
 ```
 
-Được tạo tự động bởi Hệ Thống Mô Tả Hình Ảnh.
+Được tạo tự động bởi Hệ Thống Chú Thích Hình Ảnh.
 """
-            zf.writestr("README.md", readme_content)
+            zf.writestr("download_report.txt", summary_report)
         
         cursor.close()
         conn.close()
@@ -1255,11 +1305,15 @@ def generate_download_package(user_data):
         # Reset file pointer to start
         memory_file.seek(0)
         
-        # Create activity log
+        # Create activity log with detailed stats
         track_activity("download_approved_data", user_data.get('id'), {
-            "count": len(captions_data),
+            "total_approved": total_approved,
+            "images_included": images_included,
+            "missing_files": len(missing_files),
             "timestamp": datetime.now().isoformat()
         })
+        
+        print(f"Download package generated: {images_included}/{total_approved} images included")
         
         # Return the zip file
         return memory_file.getvalue(), 200, {

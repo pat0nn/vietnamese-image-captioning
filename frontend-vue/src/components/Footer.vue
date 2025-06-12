@@ -20,20 +20,14 @@
         <div class="footer-section">
           <h3>Thông tin đồ án</h3>
           <p>Sản phẩm nằm trong ĐATN 2025 của Sinh viên Phạm Bá Trọng</p>
-          <p><strong>Người hướng dẫn:</strong> Ths. Pham Việt Anh</p>
+          <p><strong>Người hướng dẫn:</strong> Ths. Phạm Việt Anh</p>
           <p><strong>Trường:</strong> Đại học Công nghiệp Hà Nội</p>
         </div>
       </div>
     </div>
   </footer>
   
-  <section class="copyright-section">
-    <div class="container">
-      <div class="copyright">
-        <p>Bản quyền thuộc về <a href="#">Phạm Bá Trọng</a> - {{ new Date().getFullYear() }}</p>
-      </div>
-    </div>
-  </section>
+
 </template>
 
 <style scoped>

@@ -26,7 +26,6 @@ export async function getImageCaption(formData, signal) {
       throw error;
     }
     
-    console.error('Error calling image caption API:', error);
     throw error;
   }
 }
@@ -45,7 +44,6 @@ export async function textToSpeech(text) {
     });
     return response.data;
   } catch (error) {
-    console.error('Error calling text-to-speech API:', error);
     throw error;
   }
 }
@@ -65,7 +63,6 @@ export async function contributeImage(formData) {
     });
     return response.data;
   } catch (error) {
-    console.error('Error calling contribute API:', error);
     throw error;
   }
 }
@@ -89,7 +86,6 @@ export async function submitRating(imageId, rating) {
     );
     return response.data;
   } catch (error) {
-    console.error('Error submitting rating:', error);
     throw error;
   }
 }
@@ -107,7 +103,6 @@ export async function getUserContributions() {
     });
     return response.data;
   } catch (error) {
-    console.error('Error getting user contributions:', error);
     throw error;
   }
 }
@@ -119,7 +114,6 @@ export async function getUserContributions() {
  * @returns {Promise} Promise with response data
  */
 export async function updateContribution(contributionId, caption) {
-  console.log(`Calling updateContribution API with ID: ${contributionId} and caption: ${caption}`);
   try {
     // Sử dụng endpoint chuẩn
     const response = await axios.put(`${API_URL}/api/user/contribution/${contributionId}`, 
@@ -133,7 +127,6 @@ export async function updateContribution(contributionId, caption) {
     );
     return response.data;
   } catch (error) {
-    console.error('Error updating contribution:', error);
     throw error;
   }
 }
@@ -145,7 +138,6 @@ export async function updateContribution(contributionId, caption) {
  */
 export async function deleteContribution(contributionId) {
   try {
-    console.log(`Deleting contribution with ID: ${contributionId} via API endpoint`);
     const response = await axios.delete(`${API_URL}/api/contribution/${contributionId}`, {
       headers: {
         'Authorization': `Bearer ${localStorage.getItem('token')}`,
@@ -153,7 +145,6 @@ export async function deleteContribution(contributionId) {
     });
     return response.data;
   } catch (error) {
-    console.error('Error deleting contribution:', error);
     throw error;
   }
 } 

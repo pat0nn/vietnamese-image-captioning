@@ -36,7 +36,6 @@ export default {
   methods: {
     handleForgotPassword() {
       // In a real app, this would make an API call to send a reset password email
-      console.log('Reset password requested for:', this.email);
       
       // For demo purposes, we'll just show a success message and redirect
       alert('Password reset link has been sent to your email.');

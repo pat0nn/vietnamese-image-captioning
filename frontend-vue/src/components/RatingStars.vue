@@ -39,7 +39,6 @@ const handleClick = async (star) => {
     hasRated.value = true;
     props.onRatingSubmitted(star);
   } catch (error) {
-    console.error('Error submitting rating:', error);
     rating.value = 0;
   } finally {
     isSubmitting.value = false;

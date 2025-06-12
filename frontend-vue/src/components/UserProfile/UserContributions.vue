@@ -25,12 +25,10 @@ const fetchContributions = async () => {
   
   try {
     const response = await getUserContributions();
-    console.log('Raw API response:', response);
     
     // Process contributions to ensure consistent field names
     if (response.contributions && Array.isArray(response.contributions)) {
       contributions.value = response.contributions.map(item => {
-        console.log('Processing contribution item:', item);
         // Create a normalized item with consistent field names
         return {
           ...item,
@@ -43,7 +41,6 @@ const fetchContributions = async () => {
         };
       });
       
-      console.log('Processed contributions with normalized fields:', contributions.value);
       
       // Test image URLs for diagnostic purposes
       if (contributions.value.length > 0) {
@@ -53,9 +50,7 @@ const fetchContributions = async () => {
       contributions.value = [];
     }
     
-    console.log('Processed contributions:', contributions.value);
   } catch (err) {
-    console.error('Error fetching contributions:', err);
     error.value = 'Không thể tải danh sách đóng góp của bạn';
     toast.error(error.value);
   } finally {
@@ -70,7 +65,6 @@ const handleDeleteContribution = async (contributionId) => {
   }
   
   try {
-    console.log(`Attempting to delete contribution with ID: ${contributionId}`);
     
     // Tìm item để lấy thông tin chính xác về contribution_id
     const itemToDelete = contributions.value.find(item => 
@@ -83,8 +77,6 @@ const handleDeleteContribution = async (contributionId) => {
     
     // Ưu tiên sử dụng contribution_id (chính là id trong bảng contributions)
     const idToUse = itemToDelete.contribution_id || contributionId;
-    console.log('Deleting contribution with ID:', idToUse, '(Original ID:', contributionId, ')');
-    console.log('Full item data:', itemToDelete);
     
     // Xóa contribution bằng contribution_id
     await deleteContribution(idToUse);
@@ -95,7 +87,6 @@ const handleDeleteContribution = async (contributionId) => {
     );
     toast.success('Đã xóa đóng góp thành công');
   } catch (err) {
-    console.error('Error deleting contribution:', err);
     toast.error('Không thể xóa đóng góp');
   }
 };
@@ -175,8 +166,6 @@ const handleSaveEdit = async (contributionId) => {
     
     // Ưu tiên sử dụng image_id
     const idToUse = itemToUpdate.image_id || contributionId;
-    console.log('Updating contribution with ID:', idToUse, '(Original ID:', contributionId, ')');
-    console.log('Full item data:', itemToUpdate);
     
     // Update caption on server using image_id
     await updateContribution(idToUse, editedCaption.value);
@@ -197,7 +186,6 @@ const handleSaveEdit = async (contributionId) => {
     editItem.value = null;
     toast.success('Cập nhật mô tả thành công');
   } catch (err) {
-    console.error('Error updating caption:', err);
     toast.error(`Không thể cập nhật mô tả: ${err.message || 'Lỗi không xác định'}`);
   } finally {
     isSaving.value = false;
@@ -220,7 +208,6 @@ const openFullSize = (item) => {
   const img = new Image();
   
   img.onerror = () => {
-    console.error('Failed to load image:', imageUrl);
     toast.error('Không thể tải hình ảnh');
   };
   
@@ -237,11 +224,9 @@ const openFullSize = (item) => {
 
 // Get proper image URL with fallback
 const getImageUrl = (item) => {
-  console.log('Getting URL for item:', item);
   
   // Check if item exists and has image data
   if (!item || (!item.image && !item.image_path)) {
-    console.log('No image or image_path found in item');
     return '/placeholder-image.svg'; // Fallback image
   }
   
@@ -249,7 +234,6 @@ const getImageUrl = (item) => {
   if ((item.image && item.image.startsWith('http')) || 
       (item.image_path && item.image_path.startsWith('http'))) {
     const url = item.image || item.image_path;
-    console.log('Using full URL:', url);
     return url;
   }
   
@@ -293,20 +277,15 @@ const testImageUrls = async (item) => {
     `/api/uploads/${item.image}`
   ];
   
-  console.log('Testing image URLs for:', item);
   
   for (const path of paths) {
     if (!path.includes('undefined')) {
       const fullUrl = `${API_URL}${path}`;
-      console.log(`Testing URL: ${fullUrl}`);
       
       try {
         const img = new Image();
-        img.onload = () => console.log(`✅ URL works: ${fullUrl}`);
-        img.onerror = () => console.log(`❌ URL failed: ${fullUrl}`);
         img.src = fullUrl;
       } catch (err) {
-        console.error(`Error testing ${fullUrl}:`, err);
       }
     }
   }

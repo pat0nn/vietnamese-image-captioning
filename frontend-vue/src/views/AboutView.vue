@@ -5,7 +5,7 @@ import Footer from '../components/Footer.vue';
 <template>
   <div class="page-container">
     <div class="about flex-grow">
-      <h1>Giới thiệu về dự án</h1>
+    <h1>Giới thiệu về dự án</h1>
     </div>
     
     <!-- Footer -->
@@ -29,6 +29,29 @@ import Footer from '../components/Footer.vue';
     min-height: 70vh;
     display: flex;
     align-items: center;
+  }
+}
+
+/* Mobile-specific styles to push footer down */
+@media (max-width: 768px) {
+  .page-container {
+    min-height: 120vh;
+  }
+  
+  .flex-grow {
+    min-height: 100vh;
+    padding-bottom: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-container {
+    min-height: 130vh;
+  }
+  
+  .flex-grow {
+    min-height: 110vh;
+    padding-bottom: 3rem;
   }
 }
 </style>

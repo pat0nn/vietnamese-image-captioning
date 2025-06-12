@@ -103,4 +103,27 @@ main {
   max-width: 900px;
   margin: 0 auto;
 }
+
+/* Mobile-specific styles to push footer down */
+@media (max-width: 768px) {
+  .page-container {
+    min-height: 120vh;
+  }
+  
+  .flex-grow {
+    min-height: 100vh;
+    padding-bottom: 2rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-container {
+    min-height: 130vh;
+  }
+  
+  .flex-grow {
+    min-height: 110vh;
+    padding-bottom: 3rem;
+  }
+}
 </style> 

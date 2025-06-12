@@ -18,7 +18,6 @@ export async function textToSpeech(text) {
     });
     return response.data;
   } catch (error) {
-    console.error('Error calling text-to-speech API:', error);
     throw error;
   }
 } 

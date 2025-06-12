@@ -17,23 +17,18 @@ const defaultAvatar = `${API_URL}/uploads/avatars/default.jpg?t=1747130856326`;
 
 // Computed property for avatar URL to match the approach in ProfileEdit.vue
 const avatarUrl = computed(() => {
-  console.log('User data in AuthNav:', authStore.currentUser);
-  console.log('Avatar value in AuthNav:', authStore.currentUser?.avatar);
   
   if (authStore.currentUser?.avatar) {
     // If avatar is a full URL (starts with http), use it directly
     if (authStore.currentUser.avatar.startsWith('http')) {
-      console.log('Using HTTP avatar URL in AuthNav');
       return authStore.currentUser.avatar;
     } else if (authStore.currentUser.avatar !== 'default.jpg') {
       // Otherwise, construct the full URL
       const url = `${API_URL}/uploads/avatars/${authStore.currentUser.avatar}`;
-      console.log('Generated avatar URL in AuthNav:', url);
       return url;
     }
   }
   
-  console.log('Using default avatar in AuthNav');
   return defaultAvatar;
 });
 
@@ -86,7 +81,6 @@ const goToAdmin = async () => {
       // Navigate to admin
       router.push('/admin');
     } catch (error) {
-      console.error('Error auto-logging into admin:', error);
       router.push('/admin/login?redirect=/admin');
     }
   } else {

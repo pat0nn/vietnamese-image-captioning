@@ -59,7 +59,6 @@ export default {
   methods: {
     handleRegister() {
       // In a real app, this would make an API call to register the user
-      console.log('Registration submitted:', this.formData);
       
       // For demo purposes, we'll just redirect to the login page
       this.$router.push('/login');

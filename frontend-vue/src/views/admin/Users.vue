@@ -309,7 +309,6 @@ export default {
           error.value = 'Failed to load users';
         }
       } catch (error) {
-        console.error('Error loading users:', error);
         error.value = error.message || 'An unexpected error occurred';
       } finally {
         loading.value = false;
@@ -370,7 +369,6 @@ export default {
           formError.value = 'Failed to create user';
         }
       } catch (error) {
-        console.error('Error creating user:', error);
         formError.value = error.message || 'An unexpected error occurred';
       }
     };
@@ -394,7 +392,6 @@ export default {
           formError.value = 'Failed to update user';
         }
       } catch (error) {
-        console.error('Error updating user:', error);
         formError.value = error.message || 'An unexpected error occurred';
       }
     };
@@ -418,7 +415,6 @@ export default {
           error.value = 'Failed to delete user';
         }
       } catch (error) {
-        console.error('Error deleting user:', error);
         error.value = error.message || 'An unexpected error occurred';
       }
     };

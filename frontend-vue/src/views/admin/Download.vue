@@ -123,7 +123,6 @@ export default {
           error.value = response.data.error || 'Không thể lấy số lượng ảnh đã duyệt';
         }
       } catch (err) {
-        console.error('Error fetching approved count:', err);
         error.value = err.response?.data?.error || 'Đã xảy ra lỗi khi lấy số liệu';
       } finally {
         loading.value = false;
@@ -162,7 +161,6 @@ export default {
         
         success.value = 'Tệp zip đã được tạo và tải xuống thành công!';
       } catch (err) {
-        console.error('Error generating download package:', err);
         error.value = 'Đã xảy ra lỗi khi tạo tệp zip. Vui lòng thử lại sau.';
       } finally {
         generating.value = false;

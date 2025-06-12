@@ -25,7 +25,6 @@ export function playAudioFromBase64(base64Audio, onStart, onEnd, onError) {
     
     if (onError) {
       audio.addEventListener('error', (error) => {
-        console.error('Audio error:', error);
         onError(error);
       });
     }
@@ -35,7 +34,6 @@ export function playAudioFromBase64(base64Audio, onStart, onEnd, onError) {
     
     if (playPromise) {
       playPromise.catch((error) => {
-        console.error('Play error:', error);
         if (onError) {
           onError(error);
         }
@@ -44,7 +42,6 @@ export function playAudioFromBase64(base64Audio, onStart, onEnd, onError) {
     
     return audio;
   } catch (error) {
-    console.error('Audio creation error:', error);
     if (onError) {
       onError(error);
     }
@@ -63,6 +60,5 @@ export function stopAudio(audio) {
     audio.pause();
     audio.currentTime = 0;
   } catch (error) {
-    console.error('Error stopping audio:', error);
   }
 } 
